@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cubos_movies_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cubos_movies
+      POSTGRES_USER: cubos
+      POSTGRES_PASSWORD: cubos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U cubos -d cubos_movies" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,0 +1,20 @@
+{
+  "name": "cubos-movies-fullstack",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "dev:backend": "npm run start:dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "lint": "npm run lint:check --workspace backend && npm run lint --workspace frontend",
+    "test": "npm run test:ci --workspace backend && npm run test --workspace frontend"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
