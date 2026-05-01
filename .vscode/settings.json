@@ -3,6 +3,8 @@
     "git rev-parse": true,
     "npx @nestjs/cli@latest": true,
     "git remote": true,
-    "git init": true
+    "git init": true,
+    "npm run lint:check": true,
+    "npm run test:ci": true
   }
 }
