@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { MoviesService } from './movies.service';
 
 interface RequestWithUser extends Request {
@@ -34,8 +36,11 @@ export class MoviesController {
   }
 
   @Get()
-  findAll(@Req() req: RequestWithUser) {
-    return this.moviesService.findAllByOwner(req.user.sub);
+  findAll(@Req() req: RequestWithUser, @Query() paginationDto: PaginationDto) {
+    return this.moviesService.findAllByOwnerWithPagination(
+      req.user.sub,
+      paginationDto,
+    );
   }
 
   @Get(':id')

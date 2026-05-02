@@ -4,10 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { Movie } from './entities/movie.entity';
+import { PaginatedResponse } from './types/paginated-response';
 
 @Injectable()
 export class MoviesService {
@@ -34,6 +36,37 @@ export class MoviesService {
       where: { ownerId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async findAllByOwnerWithPagination(
+    ownerId: string,
+    paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<Movie>> {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: Record<string, any> = { ownerId };
+
+    if (search && typeof search === 'string') {
+      whereClause.title = Like(`%${search}%`);
+    }
+
+    const [data, total] = await this.moviesRepository.findAndCount({
+      where: whereClause,
+      order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async findOneByOwner(ownerId: string, movieId: string): Promise<Movie> {

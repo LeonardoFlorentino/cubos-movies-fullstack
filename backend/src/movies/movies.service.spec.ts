@@ -20,6 +20,7 @@ describe('MoviesService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       remove: jest.fn(),
+      findAndCount: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -80,5 +81,29 @@ describe('MoviesService', () => {
     await expect(
       service.findOneByOwner('user-1', 'movie-1'),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('should return paginated movies with search', async () => {
+    const mockMovies = [
+      { id: 'movie-1', title: 'Interstellar', ownerId: 'user-1' },
+      { id: 'movie-2', title: 'Inception', ownerId: 'user-1' },
+    ];
+
+    repository.findAndCount?.mockResolvedValue([mockMovies, 2]);
+
+    const result = await service.findAllByOwnerWithPagination('user-1', {
+      page: 1,
+      limit: 10,
+      search: 'Inter',
+    });
+
+    expect(result).toEqual({
+      data: mockMovies,
+      total: 2,
+      page: 1,
+      limit: 10,
+      totalPages: 1,
+    });
+    expect(repository.findAndCount).toHaveBeenCalled();
   });
 });
