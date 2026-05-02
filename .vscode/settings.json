@@ -5,6 +5,7 @@
     "git remote": true,
     "git init": true,
     "npm run lint:check": true,
-    "npm run test:ci": true
+    "npm run test:ci": true,
+    "npm run tsc": true
   }
 }
