@@ -1,0 +1,73 @@
+import { useState } from "react";
+import type { FormEvent } from "react";
+
+import { AuthCard } from "../../components/auth/AuthCard";
+import { Input } from "../../components/ui/Input/Input";
+import { loginSchema } from "../../lib/auth.schemas";
+import { useAuthStore } from "../../store/auth.store";
+
+// Importação direta do CSS global do componente
+import "./LoginPage.css";
+
+export function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const { loginAction, isLoading, error } = useAuthStore();
+  const errorMessage = validationError || error;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const result = loginSchema.safeParse({ email, password });
+
+    if (!result.success) {
+      setValidationError(result.error.issues[0]?.message ?? "Invalid form");
+      return;
+    }
+
+    setValidationError(null);
+    await loginAction(result.data);
+  };
+
+  return (
+    <AuthCard cardClassName="auth-card-custom">
+      <form className="login-form" onSubmit={handleSubmit}>
+        <Input
+          label="Nome/E-mail"
+          type="email"
+          placeholder="Digite seu nome/E-mail"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          autoComplete="email"
+        />
+
+        <Input
+          label="Senha"
+          type="password"
+          placeholder="Digite sua senha"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="current-password"
+        />
+
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+        <div className="actions-wrapper">
+          <a
+            className="forgot-password-link"
+            href="#"
+            onClick={(event) => event.preventDefault()}
+          >
+            Esqueci minha senha
+          </a>
+
+          <button className="btn-submit" disabled={isLoading} type="submit">
+            {isLoading ? "Entrando..." : "Entrar"}
+          </button>
+        </div>
+      </form>
+    </AuthCard>
+  );
+}

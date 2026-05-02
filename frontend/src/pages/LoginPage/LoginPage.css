@@ -1,0 +1,27 @@
+@reference "../../index.css";
+
+/* LoginPage.css */
+
+.auth-card-custom {
+  @apply mt-22 max-[820px]:mt-0;
+}
+
+.login-form {
+  @apply grid gap-3.5;
+}
+
+.error-message {
+  @apply m-0 rounded border border-[#d16f7e] bg-[rgba(75,24,36,0.45)] px-2.5 py-2 text-sm text-(--danger);
+}
+
+.actions-wrapper {
+  @apply flex items-center justify-between gap-3 pt-1;
+}
+
+.forgot-password-link {
+  @apply text-base leading-none text-(--accent) underline;
+}
+
+.btn-submit {
+  @apply inline-flex h-11 min-w-20.75 items-center justify-center rounded-xs border-0 bg-(--accent) px-4.5 text-base font-medium text-[#f8f2ff] hover:bg-(--accent-hover) disabled:opacity-70;
+}

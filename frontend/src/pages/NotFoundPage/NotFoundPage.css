@@ -1,0 +1,18 @@
+/* src/pages/NotFound/NotFoundPage.css */
+@reference "../../index.css";
+
+.not-found-container {
+  @apply grid justify-items-center gap-3.5 p-2 text-center;
+}
+
+.error-code {
+  @apply m-0 text-[22px] font-bold text-[#b5b7ca];
+}
+
+.not-found-title {
+  @apply m-0 text-3xl;
+}
+
+.btn-back {
+  @apply inline-flex h-11 min-w-20.75 items-center justify-center rounded-xs border-0 bg-(--accent) px-4.5 text-base font-medium text-[#f8f2ff] no-underline hover:bg-(--accent-hover);
+}

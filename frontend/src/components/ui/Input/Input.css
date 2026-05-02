@@ -1,0 +1,17 @@
+@reference "../../index.css";
+@layer components {
+  .input-field {
+    @apply h-11 w-full rounded border 
+           border-(--input-border) 
+           bg-(--input-bg) 
+           px-3.5 
+           text-base 
+           text-(--text-soft) 
+           placeholder:text-(--text-placeholder) 
+           focus:border-[#8d67ce] 
+           focus:shadow-[inset_0_0_0_1px_#8d67ce] 
+           focus:outline-none 
+           max-[820px]:h-12 
+           transition-all;
+  }
+}

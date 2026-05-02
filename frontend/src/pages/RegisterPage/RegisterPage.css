@@ -1,0 +1,29 @@
+@reference "../../index.css";
+
+.register-form {
+  @apply grid gap-3.5;
+}
+
+.input-group {
+  @apply grid gap-2;
+}
+
+.input-label {
+  @apply text-[12.8px] font-bold text-[#f0f0f7];
+}
+
+.register-input {
+  @apply h-11 w-full rounded border border-(--input-border) bg-(--input-bg) px-3.5 text-base text-(--text-soft) placeholder:text-(--text-placeholder) focus:border-[#8d67ce] focus:shadow-[inset_0_0_0_1px_#8d67ce] focus:outline-none max-[820px]:h-12;
+}
+
+.error-container {
+  @apply m-0 rounded border border-[#d16f7e] bg-[rgba(75,24,36,0.45)] px-2.5 py-2 text-sm text-(--danger);
+}
+
+.form-actions {
+  @apply flex items-center justify-end gap-3 pt-1;
+}
+
+.btn-submit {
+  @apply inline-flex h-11 min-w-20.75 items-center justify-center rounded-xs border-0 bg-(--accent) px-4.5 text-base font-medium text-[#f8f2ff] hover:bg-(--accent-hover) disabled:opacity-70;
+}
