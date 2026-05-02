@@ -2,14 +2,16 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage/NotFoundPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
+import { MoviesListPage } from "./pages/MoviesListPage/MoviesListPage";
 
 function App() {
   return (
     <main>
       <Routes>
-        <Route element={<Navigate replace to="/login" />} path="/" />
+        <Route element={<Navigate replace to="/movies" />} path="/" />
         <Route element={<LoginPage />} path="/login" />
         <Route element={<RegisterPage />} path="/register" />
+        <Route element={<MoviesListPage />} path="/movies" />
         <Route element={<NotFoundPage />} path="*" />
       </Routes>
     </main>
