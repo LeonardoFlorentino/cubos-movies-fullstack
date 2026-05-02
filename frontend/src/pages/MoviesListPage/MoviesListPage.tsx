@@ -38,7 +38,9 @@ export function MoviesListPage() {
   if (!token) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-600">Por favor, faça login para ver seus filmes.</p>
+        <p className="text-lg text-gray-600">
+          Por favor, faça login para ver seus filmes.
+        </p>
       </div>
     );
   }
@@ -97,7 +99,7 @@ export function MoviesListPage() {
         {!isLoading && movies.length > 0 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {movies.map((movie: typeof movies[0]) => (
+              {movies.map((movie: (typeof movies)[0]) => (
                 <div
                   key={movie.id}
                   className="bg-slate-700 rounded-lg overflow-hidden hover:transform hover:scale-105 transition cursor-pointer group"
@@ -125,7 +127,9 @@ export function MoviesListPage() {
                     <div className="space-y-2 text-sm text-slate-400 mb-4">
                       <p>
                         <span className="font-semibold">Lançamento:</span>{" "}
-                        {new Date(movie.releaseDate).toLocaleDateString("pt-BR")}
+                        {new Date(movie.releaseDate).toLocaleDateString(
+                          "pt-BR",
+                        )}
                       </p>
                       <p>
                         <span className="font-semibold">Orçamento:</span> R${" "}

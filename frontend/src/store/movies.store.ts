@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { getMovies as fetchMovies, getMovieById as fetchMovieById } from "../lib/api";
+import {
+  getMovies as fetchMovies,
+  getMovieById as fetchMovieById,
+} from "../lib/api";
 import type { Movie } from "../types/movies";
 
 interface MoviesState {
@@ -12,7 +15,11 @@ interface MoviesState {
   total: number;
   totalPages: number;
   search: string;
-  getMoviesAction: (page?: number, limit?: number, search?: string) => Promise<void>;
+  getMoviesAction: (
+    page?: number,
+    limit?: number,
+    search?: string,
+  ) => Promise<void>;
   getMovieByIdAction: (id: string) => Promise<void>;
   resetError: () => void;
   setSearch: (search: string) => void;
@@ -45,7 +52,8 @@ export const useMoviesStore = create<MoviesState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch movies",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch movies",
         isLoading: false,
       });
     }
