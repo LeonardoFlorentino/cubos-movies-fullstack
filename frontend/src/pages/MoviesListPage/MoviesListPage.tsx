@@ -46,7 +46,7 @@ export function MoviesListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Meus Filmes</h1>
 

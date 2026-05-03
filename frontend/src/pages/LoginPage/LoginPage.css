@@ -25,3 +25,8 @@
 .btn-submit {
   @apply inline-flex h-11 min-w-20.75 items-center justify-center rounded-xs border-0 bg-(--accent) px-4.5 text-base font-medium text-[#f8f2ff] hover:bg-(--accent-hover) disabled:opacity-70;
 }
+.actions-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

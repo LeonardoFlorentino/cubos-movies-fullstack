@@ -55,14 +55,18 @@ export function LoginPage() {
         {errorMessage && <p className="error-message">{errorMessage}</p>}
 
         <div className="actions-wrapper">
-          <a
-            className="forgot-password-link"
-            href="#"
-            onClick={(event) => event.preventDefault()}
-          >
-            Esqueci minha senha
-          </a>
-
+          <div className="actions-links">
+            <a
+              className="forgot-password-link"
+              href="#"
+              onClick={(event) => event.preventDefault()}
+            >
+              Esqueci minha senha
+            </a>
+            <a className="forgot-password-link" href="/register">
+              Criar conta
+            </a>
+          </div>
           <button className="btn-submit" disabled={isLoading} type="submit">
             {isLoading ? "Entrando..." : "Entrar"}
           </button>
