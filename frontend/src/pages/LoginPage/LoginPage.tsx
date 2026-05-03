@@ -7,7 +7,7 @@ import { loginSchema } from "../../lib/auth.schemas";
 import { useAuthStore } from "../../store/auth.store";
 
 // Importação direta do CSS global do componente
-import "./LoginPage.css";
+import "./login-page.css";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { AuthCard } from "../../components/auth/AuthCard";
 
-import "./NotFoundPage.css";
+import "./not-found-page.css";
 
 export function NotFoundPage() {
   return (

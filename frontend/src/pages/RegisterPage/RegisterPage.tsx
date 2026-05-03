@@ -4,7 +4,7 @@ import { AuthCard } from "../../components/auth/AuthCard";
 import { registerSchema } from "../../lib/auth.schemas";
 import { useAuthStore } from "../../store/auth.store";
 
-import "./RegisterPage.css";
+import "./register-page.css";
 
 export function RegisterPage() {
   const [name, setName] = useState("");
