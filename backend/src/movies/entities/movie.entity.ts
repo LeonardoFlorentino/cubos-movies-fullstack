@@ -29,6 +29,13 @@ export class Movie {
   @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null = null;
 
+  @Column({
+    name: 'release_reminder_sent_at',
+    type: 'timestamp',
+    nullable: true,
+  })
+  releaseReminderSentAt: Date | null = null;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner_id' })
   owner!: User;
