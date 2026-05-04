@@ -5,6 +5,7 @@ export interface Movie {
   releaseDate: string;
   budget: string;
   imageUrl: string | null;
+  trailer: string | null;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -24,6 +25,7 @@ export interface CreateMoviePayload {
   releaseDate: string;
   budget: number;
   imageUrl?: string;
+  trailer?: string;
 }
 
 export interface UpdateMoviePayload {
@@ -32,4 +34,5 @@ export interface UpdateMoviePayload {
   releaseDate?: string;
   budget?: number;
   imageUrl?: string;
+  trailer?: string;
 }

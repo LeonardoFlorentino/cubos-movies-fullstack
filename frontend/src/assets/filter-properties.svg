@@ -1,0 +1,46 @@
+<svg width="640" height="480" viewBox="0 0 640 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="640" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E2233"/>
+      <stop offset="1" stop-color="#111420"/>
+    </linearGradient>
+    <linearGradient id="card" x1="40" y1="64" x2="600" y2="416" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#232A40"/>
+      <stop offset="1" stop-color="#181E31"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" rx="20" fill="url(#bg)"/>
+  <rect x="40" y="64" width="560" height="352" rx="16" fill="url(#card)" stroke="#3D486A"/>
+  <text x="72" y="110" fill="#D7DCF5" font-family="Manrope, Segoe UI, sans-serif" font-size="22" font-weight="700">
+    Propriedades dos Filtros
+  </text>
+
+  <rect x="72" y="140" width="496" height="2" fill="#303B5A"/>
+
+  <text x="72" y="188" fill="#AAB3D9" font-family="Manrope, Segoe UI, sans-serif" font-size="14" font-weight="700">
+    Duração
+  </text>
+  <rect x="72" y="202" width="496" height="34" rx="8" fill="#151A2A" stroke="#364264"/>
+  <text x="88" y="224" fill="#E5EAFE" font-family="Manrope, Segoe UI, sans-serif" font-size="13">
+    Curta | Média | Longa
+  </text>
+
+  <text x="72" y="272" fill="#AAB3D9" font-family="Manrope, Segoe UI, sans-serif" font-size="14" font-weight="700">
+    Período
+  </text>
+  <rect x="72" y="286" width="496" height="34" rx="8" fill="#151A2A" stroke="#364264"/>
+  <text x="88" y="308" fill="#E5EAFE" font-family="Manrope, Segoe UI, sans-serif" font-size="13">
+    Últimos 30 dias | 12 meses | Ano atual | Personalizado
+  </text>
+
+  <text x="72" y="356" fill="#AAB3D9" font-family="Manrope, Segoe UI, sans-serif" font-size="14" font-weight="700">
+    Gênero
+  </text>
+  <rect x="72" y="370" width="496" height="34" rx="8" fill="#151A2A" stroke="#364264"/>
+  <text x="88" y="392" fill="#E5EAFE" font-family="Manrope, Segoe UI, sans-serif" font-size="13">
+    Ação | Drama | Romance | Ficção Científica | Terror
+  </text>
+
+  <circle cx="565" cy="106" r="6" fill="#A56CFF"/>
+  <circle cx="586" cy="106" r="6" fill="#7D5BFF"/>
+</svg>

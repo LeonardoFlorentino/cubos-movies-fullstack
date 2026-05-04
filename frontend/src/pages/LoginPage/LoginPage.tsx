@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { AuthCard } from "../../components/auth/AuthCard";
 import { Input } from "../../components/ui/Input/Input";
@@ -15,6 +16,7 @@ export function LoginPage() {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const { loginAction, isLoading, error } = useAuthStore();
+  const navigate = useNavigate();
   const errorMessage = validationError || error;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -29,6 +31,10 @@ export function LoginPage() {
 
     setValidationError(null);
     await loginAction(result.data);
+
+    if (!useAuthStore.getState().error) {
+      navigate("/movies");
+    }
   };
 
   return (

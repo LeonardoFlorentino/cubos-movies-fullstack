@@ -1,4 +1,15 @@
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/auth.store";
+
 export function AuthHeader() {
+  const navigate = useNavigate();
+  const { logoutAction } = useAuthStore();
+
+  const handleLogout = () => {
+    logoutAction();
+    navigate("/login");
+  };
+
   return (
     <header className="flex items-center justify-between border-b border-(--line-color) px-4 py-3 max-[820px]:flex-wrap max-[820px]:gap-3">
       <div className="flex items-center gap-3" aria-label="Cubos Movies">
@@ -25,6 +36,7 @@ export function AuthHeader() {
         <button
           className="h-11 min-w-[90px] bg-(--accent) px-5 text-base font-medium text-[#f5f0ff] hover:bg-(--accent-hover) max-[820px]:h-[38px] max-[820px]:min-w-[82px] max-[820px]:px-4"
           type="button"
+          onClick={handleLogout}
         >
           Logout
         </button>

@@ -112,6 +112,10 @@ export class MoviesService {
       movie.imageUrl = updateMovieDto.imageUrl;
     }
 
+    if (typeof updateMovieDto.trailer === 'string') {
+      movie.trailer = updateMovieDto.trailer;
+    }
+
     return this.moviesRepository.save(movie);
   }
 

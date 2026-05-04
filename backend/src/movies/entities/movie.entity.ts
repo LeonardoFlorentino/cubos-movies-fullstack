@@ -29,6 +29,9 @@ export class Movie {
   @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null = null;
 
+  @Column({ name: 'trailer_url', type: 'varchar', length: 500, nullable: true })
+  trailer: string | null = null;
+
   @Column({
     name: 'release_reminder_sent_at',
     type: 'timestamp',

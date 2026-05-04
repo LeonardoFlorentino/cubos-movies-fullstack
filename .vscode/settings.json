@@ -6,6 +6,10 @@
     "git init": true,
     "npm run lint:check": true,
     "npm run test:ci": true,
-    "npm run tsc": true
+    "npm run tsc": true,
+    "Get-NetTCPConnection": true,
+    "Get-Process": true,
+    "npm run start": true,
+    "docker exec": true
   }
 }

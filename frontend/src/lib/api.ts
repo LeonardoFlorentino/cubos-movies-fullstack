@@ -11,9 +11,11 @@ import type {
 } from "../types/movies";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const TOKEN_KEY = "cubos_movies_token";
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem("accessToken");
+  const token =
+    localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("accessToken");
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     headers: {

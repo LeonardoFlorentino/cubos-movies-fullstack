@@ -2,8 +2,10 @@ import { create } from "zustand";
 import {
   getMovies as fetchMovies,
   getMovieById as fetchMovieById,
+  createMovie as apiCreateMovie,
+  deleteMovie as apiDeleteMovie,
 } from "../lib/api";
-import type { Movie } from "../types/movies";
+import type { Movie, CreateMoviePayload } from "../types/movies";
 
 interface MoviesState {
   movies: Movie[];
@@ -21,6 +23,8 @@ interface MoviesState {
     search?: string,
   ) => Promise<void>;
   getMovieByIdAction: (id: string) => Promise<void>;
+  createMovieAction: (payload: CreateMoviePayload) => Promise<boolean>;
+  deleteMovieAction: (id: string) => Promise<void>;
   resetError: () => void;
   setSearch: (search: string) => void;
   setPage: (page: number) => void;
@@ -77,4 +81,36 @@ export const useMoviesStore = create<MoviesState>((set) => ({
   setSearch: (search: string) => set({ search }),
 
   setPage: (page: number) => set({ page }),
+  async createMovieAction(payload) {
+    set({ isLoading: true, error: null });
+    try {
+      await apiCreateMovie(payload);
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to create movie",
+        isLoading: false,
+      });
+      return false;
+    }
+  },
+
+  async deleteMovieAction(id) {
+    set({ isLoading: true, error: null });
+    try {
+      await apiDeleteMovie(id);
+      set((state) => ({
+        movies: state.movies.filter((m) => m.id !== id),
+        isLoading: false,
+      }));
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to delete movie",
+        isLoading: false,
+      });
+    }
+  },
 }));

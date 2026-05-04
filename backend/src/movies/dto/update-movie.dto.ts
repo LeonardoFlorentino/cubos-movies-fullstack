@@ -34,4 +34,10 @@ export class UpdateMovieDto {
   @IsUrl()
   @MaxLength(500)
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsUrl()
+  @MaxLength(500)
+  trailer?: string;
 }
