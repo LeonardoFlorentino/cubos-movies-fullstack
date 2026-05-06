@@ -10,6 +10,7 @@
     "Get-NetTCPConnection": true,
     "Get-Process": true,
     "npm run start": true,
-    "docker exec": true
+    "docker exec": true,
+    "Test-Path": true
   }
 }
