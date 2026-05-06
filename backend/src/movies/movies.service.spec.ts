@@ -83,6 +83,93 @@ describe('MoviesService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('should update movie fields and format budget for owner', async () => {
+    repository.findOne?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-1',
+      title: 'Old title',
+      description: 'Old description',
+      releaseDate: '2014-11-07',
+      budget: '1.00',
+      imageUrl: null,
+      trailer: null,
+    });
+    repository.save?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-1',
+      title: 'New title',
+      description: 'New description',
+      releaseDate: '2015-01-01',
+      budget: '10.50',
+      imageUrl: 'https://cdn.example.com/poster.jpg',
+      trailer: 'https://youtube.com/watch?v=123',
+    });
+
+    const result = await service.updateByOwner('user-1', 'movie-1', {
+      title: 'New title',
+      description: 'New description',
+      releaseDate: '2015-01-01',
+      budget: 10.5,
+      imageUrl: 'https://cdn.example.com/poster.jpg',
+      trailer: 'https://youtube.com/watch?v=123',
+    });
+
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        budget: '10.50',
+        title: 'New title',
+        description: 'New description',
+        releaseDate: '2015-01-01',
+        imageUrl: 'https://cdn.example.com/poster.jpg',
+        trailer: 'https://youtube.com/watch?v=123',
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        budget: '10.50',
+        title: 'New title',
+      }),
+    );
+  });
+
+  it('should deny update when movie belongs to another user', async () => {
+    repository.findOne?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-2',
+    });
+
+    await expect(
+      service.updateByOwner('user-1', 'movie-1', { title: 'Blocked update' }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('should remove movie when requester is owner', async () => {
+    const movie = {
+      id: 'movie-1',
+      ownerId: 'user-1',
+    };
+
+    repository.findOne?.mockResolvedValue(movie);
+    repository.remove?.mockResolvedValue(movie);
+
+    await service.removeByOwner('user-1', 'movie-1');
+
+    expect(repository.remove).toHaveBeenCalledWith(movie);
+  });
+
+  it('should deny removal when movie belongs to another user', async () => {
+    repository.findOne?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-2',
+    });
+
+    await expect(
+      service.removeByOwner('user-1', 'movie-1'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.remove).not.toHaveBeenCalled();
+  });
+
   it('should return paginated movies with search', async () => {
     const mockMovies = [
       { id: 'movie-1', title: 'Interstellar', ownerId: 'user-1' },
