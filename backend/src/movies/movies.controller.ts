@@ -18,7 +18,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateMovieDto } from './dto/create-movie.dto';
+import {
+  MovieResponseDto,
+  PaginatedMoviesResponseDto,
+} from './dto/movie-response.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import {
+  toMovieResponseDto,
+  toPaginatedMoviesResponseDto,
+} from './movie.mapper';
 import { PaginationDto } from './dto/pagination.dto';
 import { MoviesService } from './movies.service';
 import { MAX_UPLOAD_BYTES, StorageService } from './storage.service';
@@ -55,33 +63,47 @@ export class MoviesController {
   }
 
   @Post()
-  create(@Req() req: RequestWithUser, @Body() createMovieDto: CreateMovieDto) {
-    return this.moviesService.create(req.user.sub, createMovieDto);
+  async create(
+    @Req() req: RequestWithUser,
+    @Body() createMovieDto: CreateMovieDto,
+  ): Promise<MovieResponseDto> {
+    const movie = await this.moviesService.create(req.user.sub, createMovieDto);
+    return toMovieResponseDto(movie);
   }
 
   @Get()
-  findAll(@Req() req: RequestWithUser, @Query() paginationDto: PaginationDto) {
-    return this.moviesService.findAllByOwnerWithPagination(
+  async findAll(
+    @Req() req: RequestWithUser,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedMoviesResponseDto> {
+    const paginated = await this.moviesService.findAllByOwnerWithPagination(
       req.user.sub,
       paginationDto,
     );
+    return toPaginatedMoviesResponseDto(paginated);
   }
 
   @Get(':id')
-  findOne(
+  async findOne(
     @Req() req: RequestWithUser,
     @Param('id', new ParseUUIDPipe()) id: string,
-  ) {
-    return this.moviesService.findOneByOwner(req.user.sub, id);
+  ): Promise<MovieResponseDto> {
+    const movie = await this.moviesService.findOneByOwner(req.user.sub, id);
+    return toMovieResponseDto(movie);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Req() req: RequestWithUser,
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateMovieDto: UpdateMovieDto,
-  ) {
-    return this.moviesService.updateByOwner(req.user.sub, id, updateMovieDto);
+  ): Promise<MovieResponseDto> {
+    const movie = await this.moviesService.updateByOwner(
+      req.user.sub,
+      id,
+      updateMovieDto,
+    );
+    return toMovieResponseDto(movie);
   }
 
   @Delete(':id')

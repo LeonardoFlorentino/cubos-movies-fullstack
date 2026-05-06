@@ -4,6 +4,8 @@ export interface Movie {
   description: string;
   releaseDate: string;
   budget: string;
+  genres: string[];
+  durationMinutes: number | null;
   imageUrl: string | null;
   trailer: string | null;
   ownerId: string;
@@ -24,6 +26,8 @@ export interface CreateMoviePayload {
   description: string;
   releaseDate: string;
   budget: number;
+  genres?: string[];
+  durationMinutes?: number;
   imageUrl?: string;
   trailer?: string;
 }
@@ -33,6 +37,8 @@ export interface UpdateMoviePayload {
   description?: string;
   releaseDate?: string;
   budget?: number;
+  genres?: string[];
+  durationMinutes?: number;
   imageUrl?: string;
   trailer?: string;
 }

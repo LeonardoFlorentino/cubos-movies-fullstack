@@ -16,53 +16,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-function normalizeText(v: string) {
-  return v
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function inferGenres(title: string, description: string) {
-  const text = normalizeText(`${title} ${description}`);
-  const rules: Array<{ genre: string; keywords: string[] }> = [
-    {
-      genre: "Ação",
-      keywords: ["acao", "ação", "luta", "combate", "guerra", "heroi"],
-    },
-    {
-      genre: "Aventura",
-      keywords: ["aventura", "jornada", "viagem", "expedicao"],
-    },
-    {
-      genre: "Ficção Científica",
-      keywords: ["ficcao", "ficção", "futuro", "alien", "rob"],
-    },
-    {
-      genre: "Suspense",
-      keywords: ["suspense", "misterio", "crime", "investig"],
-    },
-    { genre: "Drama", keywords: ["drama", "emocional", "vida"] },
-  ];
-
-  const matched = rules
-    .filter((rule) =>
-      rule.keywords.some((keyword) => text.includes(normalizeText(keyword))),
-    )
-    .map((rule) => rule.genre);
-
-  if (matched.length >= 3) {
-    return matched.slice(0, 3);
-  }
-
-  const fallback = ["Ação", "Aventura", "Ficção Científica"];
-  const merged = [
-    ...matched,
-    ...fallback.filter((genre) => !matched.includes(genre)),
-  ];
-  return merged.slice(0, 3);
-}
-
 function runtimeFromDescriptionOrBudget(description: string, budget: string) {
   const explicit = description.match(/(\d{2,3})\s?(min|mins|minutes|minutos)/i);
   if (explicit) {
@@ -167,6 +120,8 @@ export function MovieDetailsPage() {
     description: "",
     releaseDate: "",
     budget: "",
+    genres: "",
+    durationMinutes: "",
     imageUrl: "",
     trailer: "",
   });
@@ -182,11 +137,15 @@ export function MovieDetailsPage() {
       return null;
     }
 
-    const genres = inferGenres(currentMovie.title, currentMovie.description);
-    const durationMinutes = runtimeFromDescriptionOrBudget(
-      currentMovie.description,
-      currentMovie.budget,
-    );
+    const genres =
+      currentMovie.genres?.filter((genre) => genre.trim().length > 0) ?? [];
+    const durationMinutes =
+      typeof currentMovie.durationMinutes === "number"
+        ? currentMovie.durationMinutes
+        : runtimeFromDescriptionOrBudget(
+            currentMovie.description,
+            currentMovie.budget,
+          );
     const insights = deriveMovieInsights(
       id,
       currentMovie.releaseDate,
@@ -210,6 +169,11 @@ export function MovieDetailsPage() {
       description: currentMovie.description,
       releaseDate: currentMovie.releaseDate,
       budget: Number(currentMovie.budget || 0).toFixed(2),
+      genres: (currentMovie.genres ?? []).join(", "),
+      durationMinutes:
+        typeof currentMovie.durationMinutes === "number"
+          ? String(currentMovie.durationMinutes)
+          : "",
       imageUrl: currentMovie.imageUrl ?? "",
       trailer: currentMovie.trailer ?? "",
     });
@@ -271,11 +235,22 @@ export function MovieDetailsPage() {
 
     setIsSavingEdit(true);
     try {
+      const parsedGenres = editForm.genres
+        .split(",")
+        .map((genre) => genre.trim())
+        .filter((genre) => genre.length > 0);
+      const parsedDuration = editForm.durationMinutes.trim()
+        ? Number.parseInt(editForm.durationMinutes, 10)
+        : undefined;
+
       await updateMovie(id, {
         title: editForm.title.trim(),
         description: editForm.description.trim(),
         releaseDate: editForm.releaseDate,
         budget: Number.parseFloat(editForm.budget),
+        genres: parsedGenres.length > 0 ? parsedGenres : undefined,
+        durationMinutes:
+          parsedDuration && parsedDuration > 0 ? parsedDuration : undefined,
         imageUrl: editForm.imageUrl.trim() || undefined,
         trailer: editForm.trailer.trim() || undefined,
       });
@@ -525,6 +500,11 @@ export function MovieDetailsPage() {
                     Gêneros
                   </p>
                   <div className="flex flex-wrap gap-2">
+                    {details.genres.length === 0 && (
+                      <span className="text-sm text-slate-400">
+                        Sem gênero informado
+                      </span>
+                    )}
                     {details.genres.map((genre) => (
                       <span
                         key={genre}
@@ -630,6 +610,36 @@ export function MovieDetailsPage() {
                     min="0"
                     step="0.01"
                     value={editForm.budget}
+                    onChange={handleEditChange}
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm text-slate-300">
+                    Gêneros
+                  </label>
+                  <input
+                    name="genres"
+                    type="text"
+                    value={editForm.genres}
+                    onChange={handleEditChange}
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                    placeholder="Aventura, Drama, Sci-Fi"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-300">
+                    Duração (min)
+                  </label>
+                  <input
+                    name="durationMinutes"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={editForm.durationMinutes}
                     onChange={handleEditChange}
                     className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
                   />

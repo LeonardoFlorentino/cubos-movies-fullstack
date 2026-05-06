@@ -193,4 +193,26 @@ describe('MoviesService', () => {
     });
     expect(repository.findAndCount).toHaveBeenCalled();
   });
+
+  it('should apply genre filter in paginated query', async () => {
+    repository.findAndCount?.mockResolvedValue([[], 0]);
+
+    await service.findAllByOwnerWithPagination('user-1', {
+      page: 1,
+      limit: 10,
+      genre: 'Drama',
+    });
+
+    const [queryOptions] = repository.findAndCount?.mock.calls[0] as [
+      { where?: Record<string, unknown> },
+    ];
+
+    expect(queryOptions.where?.ownerId).toBe('user-1');
+    expect(queryOptions.where?.genres).toEqual(
+      expect.objectContaining({
+        _type: 'arrayContains',
+        _value: ['Drama'],
+      }),
+    );
+  });
 });

@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -39,4 +40,15 @@ export class CreateMovieDto {
   @IsUrl()
   @MaxLength(500)
   trailer?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  genres?: string[];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  durationMinutes?: number;
 }

@@ -26,6 +26,12 @@ export class Movie {
   @Column({ type: 'numeric', precision: 12, scale: 2 })
   budget!: string;
 
+  @Column({ type: 'text', array: true, default: () => "'{}'" })
+  genres!: string[];
+
+  @Column({ name: 'duration_minutes', type: 'int', nullable: true })
+  durationMinutes: number | null = null;
+
   @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null = null;
 

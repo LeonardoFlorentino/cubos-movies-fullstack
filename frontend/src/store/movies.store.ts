@@ -17,10 +17,12 @@ interface MoviesState {
   total: number;
   totalPages: number;
   search: string;
+  genre: string;
   getMoviesAction: (
     page?: number,
     limit?: number,
     search?: string,
+    genre?: string,
   ) => Promise<void>;
   getMovieByIdAction: (id: string) => Promise<void>;
   createMovieAction: (payload: CreateMoviePayload) => Promise<boolean>;
@@ -40,11 +42,17 @@ export const useMoviesStore = create<MoviesState>((set) => ({
   total: 0,
   totalPages: 0,
   search: "",
+  genre: "",
 
-  async getMoviesAction(page = 1, limit = 10, search = "") {
+  async getMoviesAction(page = 1, limit = 10, search = "", genre = "") {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetchMovies(page, limit, search || undefined);
+      const response = await fetchMovies(
+        page,
+        limit,
+        search || undefined,
+        genre || undefined,
+      );
       set({
         movies: response.data,
         page: response.page,
@@ -52,6 +60,7 @@ export const useMoviesStore = create<MoviesState>((set) => ({
         total: response.total,
         totalPages: response.totalPages,
         search,
+        genre,
         isLoading: false,
       });
     } catch (error) {

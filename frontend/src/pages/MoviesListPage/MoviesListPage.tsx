@@ -29,6 +29,7 @@ type AddMovieField =
   | "description"
   | "releaseDate"
   | "budget"
+  | "durationMinutes"
   | "trailer";
 type AddMovieFieldErrors = Partial<Record<AddMovieField, string>>;
 
@@ -100,81 +101,7 @@ function formatUsdValueInput(rawValue: string) {
   return { masked, numeric };
 }
 
-// ─── genre helpers ────────────────────────────────────────────────────────────
-const genreCatalog = [
-  "Ação",
-  "Aventura",
-  "Animação",
-  "Comédia",
-  "Drama",
-  "Fantasia",
-  "Ficção Científica",
-  "Romance",
-  "Suspense",
-  "Terror",
-];
-
-const genreKeywordMap: Record<string, string[]> = {
-  Ação: ["acao", "ação", "luta", "combate", "heroi", "herói", "guerra"],
-  Aventura: [
-    "aventura",
-    "viagem",
-    "jornada",
-    "explorar",
-    "expedicao",
-    "expedição",
-  ],
-  Animação: [
-    "animacao",
-    "animação",
-    "desenho",
-    "familia",
-    "família",
-    "infantil",
-  ],
-  Comédia: ["comedia", "comédia", "engracado", "engraçado", "humor", "risada"],
-  Drama: ["drama", "emocional", "vida real"],
-  Fantasia: ["fantasia", "magia", "mundo magico", "mundo mágico", "reino"],
-  "Ficção Científica": [
-    "ficcao",
-    "ficção",
-    "cientifica",
-    "científica",
-    "futuro",
-    "espaco",
-    "espaço",
-    "alien",
-  ],
-  Romance: ["romance", "amor", "casal", "apaixonado"],
-  Suspense: [
-    "suspense",
-    "misterio",
-    "mistério",
-    "investigacao",
-    "investigação",
-    "crime",
-  ],
-  Terror: ["terror", "horror", "medo", "sobrenatural", "assombrado"],
-};
-
-function normalizeText(v: string) {
-  return v
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function inferGenre(text: string) {
-  const t = normalizeText(text);
-  for (const genre of genreCatalog) {
-    if (
-      (genreKeywordMap[genre] ?? []).some((kw) => t.includes(normalizeText(kw)))
-    ) {
-      return genre;
-    }
-  }
-  return "Drama";
-}
+const normalizeGenre = (value: string) => value.trim();
 
 function extractRuntime(description: string): number | null {
   const m = description.match(/(\d{2,3})\s?(min|mins|minutes|minutos)/i);
@@ -231,13 +158,32 @@ export function MoviesListPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [releaseDateInput, setReleaseDateInput] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
+  const [genresInput, setGenresInput] = useState("");
+  const [durationInput, setDurationInput] = useState("");
 
   // delete confirmation
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  const selectedGenre =
+    appliedFilters.genre !== "all" ? appliedFilters.genre : "";
+
   useEffect(() => {
-    getMoviesAction(page, 10, search);
-  }, [page, search, getMoviesAction]);
+    getMoviesAction(page, 10, search, selectedGenre);
+  }, [page, search, selectedGenre, getMoviesAction]);
+
+  const availableGenres = useMemo(() => {
+    const uniqueGenres = new Set<string>();
+    movies.forEach((movie) => {
+      (movie.genres ?? []).forEach((genre) => {
+        const normalized = normalizeGenre(genre);
+        if (normalized) {
+          uniqueGenres.add(normalized);
+        }
+      });
+    });
+
+    return Array.from(uniqueGenres).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [movies]);
 
   // ── search ────────────────────────────────────────────────────────────────
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -267,11 +213,17 @@ export function MoviesListPage() {
     const yearStart = new Date(today.getFullYear(), 0, 1);
 
     return movies.filter((movie) => {
-      const genre = inferGenre(`${movie.title} ${movie.description}`);
-      const runtime = getRuntime(movie.description, movie.budget);
+      const movieGenres = (movie.genres ?? []).map(normalizeGenre);
+      const runtime =
+        typeof movie.durationMinutes === "number"
+          ? movie.durationMinutes
+          : getRuntime(movie.description, movie.budget);
       const releaseDate = new Date(movie.releaseDate);
 
-      if (appliedFilters.genre !== "all" && genre !== appliedFilters.genre)
+      if (
+        appliedFilters.genre !== "all" &&
+        !movieGenres.includes(appliedFilters.genre)
+      )
         return false;
       if (appliedFilters.duration === "short" && runtime >= 90) return false;
       if (
@@ -324,6 +276,8 @@ export function MoviesListPage() {
     setForm(defaultForm);
     setReleaseDateInput("");
     setBudgetInput("");
+    setGenresInput("");
+    setDurationInput("");
     setFormError("");
     setFieldErrors({});
     setIsUploadingImage(false);
@@ -434,6 +388,18 @@ export function MoviesListPage() {
       nextFieldErrors.budget = "Informe um orçamento em dólar maior que zero.";
     }
 
+    const parsedDuration = durationInput.trim()
+      ? Number.parseInt(durationInput, 10)
+      : undefined;
+
+    if (
+      durationInput.trim() &&
+      (!Number.isInteger(parsedDuration) || (parsedDuration ?? 0) <= 0)
+    ) {
+      nextFieldErrors.durationMinutes =
+        "Informe uma duração válida em minutos (inteiro maior que zero).";
+    }
+
     if (!form.imageUrl?.trim() && !form.trailer?.trim()) {
       nextFieldErrors.trailer =
         "Informe a URL do filme (trailer) quando não houver imagem.";
@@ -447,9 +413,16 @@ export function MoviesListPage() {
 
     setFieldErrors({});
 
+    const parsedGenres = genresInput
+      .split(",")
+      .map((genre) => normalizeGenre(genre))
+      .filter((genre) => genre.length > 0);
+
     setIsSubmitting(true);
     const created = await createMovieAction({
       ...form,
+      genres: parsedGenres.length > 0 ? parsedGenres : undefined,
+      durationMinutes: parsedDuration,
       imageUrl: form.imageUrl?.trim() || undefined,
       trailer: form.trailer?.trim() || undefined,
     });
@@ -464,7 +437,7 @@ export function MoviesListPage() {
 
     toast.success("Filme salvo com sucesso.");
     setAddOpen(false);
-    await getMoviesAction(page, 10, search);
+    await getMoviesAction(page, 10, search, selectedGenre);
   };
 
   // ── delete ────────────────────────────────────────────────────────────────
@@ -579,8 +552,11 @@ export function MoviesListPage() {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {filteredMovies.map((movie) => {
                 const year = new Date(movie.releaseDate).getFullYear();
-                const genre = inferGenre(`${movie.title} ${movie.description}`);
-                const runtime = getRuntime(movie.description, movie.budget);
+                const primaryGenre = movie.genres?.[0] ?? "Sem gênero";
+                const runtime =
+                  typeof movie.durationMinutes === "number"
+                    ? movie.durationMinutes
+                    : getRuntime(movie.description, movie.budget);
 
                 return (
                   <article
@@ -637,7 +613,7 @@ export function MoviesListPage() {
                       <p className="text-xs text-[#9899b8]">
                         {Number.isNaN(year) ? "—" : year}
                         {" · "}
-                        {genre}
+                        {primaryGenre}
                       </p>
                       <p className="text-xs text-[#6b6c85]">{runtime} min</p>
                     </div>
@@ -847,6 +823,55 @@ export function MoviesListPage() {
                 </div>
               </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Gêneros
+                  </label>
+                  <input
+                    type="text"
+                    value={genresInput}
+                    onChange={(e) => setGenresInput(e.target.value)}
+                    className="input-field"
+                    placeholder="Aventura, Drama, Sci-Fi"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Separe os gêneros por vírgula.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Duração (min)
+                  </label>
+                  <input
+                    name="durationMinutes"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={durationInput}
+                    onChange={(e) => {
+                      setDurationInput(e.target.value);
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        durationMinutes: undefined,
+                      }));
+                    }}
+                    className={`input-field ${
+                      fieldErrors.durationMinutes
+                        ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
+                        : ""
+                    }`}
+                    placeholder="169"
+                  />
+                  {fieldErrors.durationMinutes && (
+                    <p className="mt-1 text-xs text-red-300">
+                      {fieldErrors.durationMinutes}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">
                   URL da imagem (poster)
@@ -1022,7 +1047,7 @@ export function MoviesListPage() {
                     className="h-11 w-full rounded-md border border-slate-600 bg-slate-950/75 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
                   >
                     <option value="all">Todos os gêneros</option>
-                    {genreCatalog.map((g) => (
+                    {availableGenres.map((g) => (
                       <option key={g} value={g}>
                         {g}
                       </option>

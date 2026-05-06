@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { ArrayContains, Like, Repository } from 'typeorm';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PaginationDto } from './dto/pagination.dto';
@@ -22,9 +22,16 @@ export class MoviesService {
     ownerId: string,
     createMovieDto: CreateMovieDto,
   ): Promise<Movie> {
+    const normalizedGenres =
+      createMovieDto.genres
+        ?.map((genre) => genre.trim())
+        .filter((genre) => genre.length > 0) ?? [];
+
     const movie = this.moviesRepository.create({
       ...createMovieDto,
       budget: createMovieDto.budget.toFixed(2),
+      genres: normalizedGenres,
+      durationMinutes: createMovieDto.durationMinutes ?? null,
       ownerId,
     });
 
@@ -42,13 +49,17 @@ export class MoviesService {
     ownerId: string,
     paginationDto: PaginationDto,
   ): Promise<PaginatedResponse<Movie>> {
-    const { page = 1, limit = 10, search } = paginationDto;
+    const { page = 1, limit = 10, search, genre } = paginationDto;
     const skip = (page - 1) * limit;
 
     const whereClause: Record<string, any> = { ownerId };
 
     if (search && typeof search === 'string') {
       whereClause.title = Like(`%${search}%`);
+    }
+
+    if (genre && typeof genre === 'string') {
+      whereClause.genres = ArrayContains([genre]);
     }
 
     const [data, total] = await this.moviesRepository.findAndCount({
@@ -114,6 +125,16 @@ export class MoviesService {
 
     if (typeof updateMovieDto.trailer === 'string') {
       movie.trailer = updateMovieDto.trailer;
+    }
+
+    if (Array.isArray(updateMovieDto.genres)) {
+      movie.genres = updateMovieDto.genres
+        .map((genre) => genre.trim())
+        .filter((genre) => genre.length > 0);
+    }
+
+    if (typeof updateMovieDto.durationMinutes === 'number') {
+      movie.durationMinutes = updateMovieDto.durationMinutes;
     }
 
     return this.moviesRepository.save(movie);
