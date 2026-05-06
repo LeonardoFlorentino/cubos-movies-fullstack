@@ -6,6 +6,11 @@ import { AuthHeader } from "../../components/auth/AuthHeader";
 import filterPropertiesGraphic from "../../assets/filter-properties.svg";
 import type { CreateMoviePayload } from "../../types/movies";
 import { toast } from "sonner";
+import { uploadMovieImage } from "../../lib/api";
+import {
+  compressImageIfNeeded,
+  formatMegabytes,
+} from "../../lib/image-compression";
 
 // ─── filter types ────────────────────────────────────────────────────────────
 type DurationFilter = "all" | "short" | "medium" | "long";
@@ -223,6 +228,7 @@ export function MoviesListPage() {
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<AddMovieFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [releaseDateInput, setReleaseDateInput] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
 
@@ -320,7 +326,37 @@ export function MoviesListPage() {
     setBudgetInput("");
     setFormError("");
     setFieldErrors({});
+    setIsUploadingImage(false);
     setAddOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const prepared = await compressImageIfNeeded(file);
+      const { imageUrl } = await uploadMovieImage(prepared.file);
+      setForm((prev) => ({ ...prev, imageUrl }));
+
+      if (prepared.wasCompressed) {
+        toast.success(
+          `Imagem comprimida (${formatMegabytes(prepared.originalSize)} -> ${formatMegabytes(prepared.finalSize)}) e enviada com sucesso.`,
+        );
+      } else {
+        toast.success("Imagem enviada com sucesso.");
+      }
+    } catch (uploadError) {
+      const message =
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Não foi possível enviar a imagem.";
+      toast.error(message);
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
   };
 
   const handleFormChange = (
@@ -823,6 +859,23 @@ export function MoviesListPage() {
                   className="input-field"
                   placeholder="https://..."
                 />
+                <div className="mt-2 flex items-center gap-2">
+                  <label className="cursor-pointer rounded-md border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/60">
+                    {isUploadingImage ? "Enviando..." : "Upload imagem"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                    />
+                  </label>
+                  {form.imageUrl?.trim() && (
+                    <span className="text-xs text-emerald-300">
+                      URL preenchida automaticamente
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div>

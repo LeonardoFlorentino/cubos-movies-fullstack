@@ -3,8 +3,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { AuthHeader } from "../../components/auth/AuthHeader";
 import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
-import { deleteMovie, updateMovie } from "../../lib/api";
+import { deleteMovie, updateMovie, uploadMovieImage } from "../../lib/api";
 import { toast } from "sonner";
+import {
+  compressImageIfNeeded,
+  formatMegabytes,
+} from "../../lib/image-compression";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -156,6 +160,7 @@ export function MovieDetailsPage() {
     useMoviesStore();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isUploadingEditImage, setIsUploadingEditImage] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -208,6 +213,7 @@ export function MovieDetailsPage() {
       imageUrl: currentMovie.imageUrl ?? "",
       trailer: currentMovie.trailer ?? "",
     });
+    setIsUploadingEditImage(false);
     setIsEditOpen(true);
   };
 
@@ -219,6 +225,37 @@ export function MovieDetailsPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleEditImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingEditImage(true);
+    try {
+      const prepared = await compressImageIfNeeded(file);
+      const { imageUrl } = await uploadMovieImage(prepared.file);
+      setEditForm((prev) => ({ ...prev, imageUrl }));
+
+      if (prepared.wasCompressed) {
+        toast.success(
+          `Imagem comprimida (${formatMegabytes(prepared.originalSize)} -> ${formatMegabytes(prepared.finalSize)}) e enviada com sucesso.`,
+        );
+      } else {
+        toast.success("Imagem enviada com sucesso.");
+      }
+    } catch (uploadError) {
+      const message =
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Não foi possível enviar a imagem.";
+      toast.error(message);
+    } finally {
+      setIsUploadingEditImage(false);
+      e.target.value = "";
+    }
   };
 
   const handleSaveEdit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -611,6 +648,16 @@ export function MovieDetailsPage() {
                   className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
                   placeholder="https://..."
                 />
+                <label className="mt-2 inline-flex cursor-pointer rounded-md border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/60">
+                  {isUploadingEditImage ? "Enviando..." : "Upload imagem"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleEditImageUpload}
+                    disabled={isUploadingEditImage}
+                  />
+                </label>
               </div>
 
               <div>

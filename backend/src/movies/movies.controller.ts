@@ -9,14 +9,19 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { MoviesService } from './movies.service';
+import { MAX_UPLOAD_BYTES, StorageService } from './storage.service';
 
 interface RequestWithUser extends Request {
   user: {
@@ -28,7 +33,26 @@ interface RequestWithUser extends Request {
 @UseGuards(JwtAuthGuard)
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService) {}
+  constructor(
+    private readonly moviesService: MoviesService,
+    private readonly storageService: StorageService,
+  ) {}
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: MAX_UPLOAD_BYTES,
+      },
+    }),
+  )
+  uploadImage(
+    @Req() req: RequestWithUser,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.storageService.uploadMovieImage(req.user.sub, file);
+  }
 
   @Post()
   create(@Req() req: RequestWithUser, @Body() createMovieDto: CreateMovieDto) {

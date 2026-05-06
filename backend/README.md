@@ -57,6 +57,37 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Image upload configuration (S3 or R2)
+
+Set the variables below in `.env.local` or `.env`.
+
+### Common
+
+- `STORAGE_PROVIDER=s3` or `STORAGE_PROVIDER=r2`
+
+### AWS S3
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `AWS_S3_BUCKET`
+- `AWS_S3_PUBLIC_BASE_URL` (optional)
+
+If `AWS_S3_PUBLIC_BASE_URL` is not set, the API uses
+`https://<bucket>.s3.<region>.amazonaws.com/<key>`.
+
+### Cloudflare R2
+
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_ACCOUNT_ID` (or set `R2_ENDPOINT` directly)
+- `R2_ENDPOINT` (optional if `R2_ACCOUNT_ID` is set)
+- `R2_BUCKET`
+- `R2_PUBLIC_BASE_URL` (required)
+
+`R2_PUBLIC_BASE_URL` should be a public base URL from your domain/CDN,
+for example `https://cdn.example.com`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

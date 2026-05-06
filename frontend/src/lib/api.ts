@@ -87,3 +87,30 @@ export function deleteMovie(id: string) {
     method: "DELETE",
   });
 }
+
+export async function uploadMovieImage(file: File) {
+  const token =
+    localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("accessToken");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/movies/upload`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    if (response.status === 413) {
+      throw new Error("Imagem muito grande. Tamanho máximo: 5MB.");
+    }
+
+    const message = await response.text();
+    throw new Error(message || "Image upload failed");
+  }
+
+  return (await response.json()) as { imageUrl: string };
+}
