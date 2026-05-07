@@ -11,6 +11,20 @@
     "Get-Process": true,
     "npm run start": true,
     "docker exec": true,
-    "Test-Path": true
+    "Test-Path": true,
+    "git push": true,
+    "/^Push-Location \"C:\\\\Users\\\\leona\\\\projects\\\\CubosMoviesFullStack\\\\backend\"; node -e \"const \\{ Client \\} = require\\('pg'\\); const client = new Client\\(\\{ host: 'localhost', port: 5432, user: 'cubos', password: 'cubos', database: 'cubos_movies' \\}\\); \\(async \\(\\) => \\{ await client\\.connect\\(\\); const result = await client\\.query\\(\\\\\"select id, title, owner_id from movies where lower\\(title\\) like '%o poderoso%' order by created_at desc\\\\\"\\); console\\.log\\(JSON\\.stringify\\(result\\.rows, null, 2\\)\\); await client\\.end\\(\\); \\}\\)\\(\\)\\.catch\\(async \\(error\\) => \\{ console\\.error\\(error\\); try \\{ await client\\.end\\(\\); \\} catch \\{\\} process\\.exit\\(1\\); \\}\\);\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^Push-Location \"C:\\\\Users\\\\leona\\\\projects\\\\CubosMoviesFullStack\\\\backend\"; \\$script = @'\nconst \\{ Client \\} = require\\(\"pg\"\\);\nconst client = new Client\\(\\{ host: \"localhost\", port: 5432, user: \"cubos\", password: \"cubos\", database: \"cubos_movies\" \\}\\);\n\\(async \\(\\) => \\{\n  await client\\.connect\\(\\);\n  const result = await client\\.query\\(\"select id, title, owner_id from movies where lower\\(title\\) like '%o poderoso%' order by created_at desc\"\\);\n  console\\.log\\(JSON\\.stringify\\(result\\.rows, null, 2\\)\\);\n  await client\\.end\\(\\);\n\\}\\)\\(\\)\\.catch\\(async \\(error\\) => \\{\n  console\\.error\\(error\\);\n  try \\{ await client\\.end\\(\\); \\} catch \\{\\}\n  process\\.exit\\(1\\);\n\\}\\);\n'@; node -e \\$script; Pop-Location$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "Get-CimInstance": true,
+    "/^Push-Location \"C:\\\\Users\\\\leona\\\\projects\\\\CubosMoviesFullStack\\\\backend\"; \\$script = @'\nconst jwt = require\\(\"jsonwebtoken\"\\);\nconst token = jwt\\.sign\\(\\{ sub: \"11111111-1111-1111-1111-111111111111\", email: \"demo@example\\.com\" \\}, \"dev-secret\", \\{ expiresIn: \"1h\" \\}\\);\n\\(async \\(\\) => \\{\n  const res = await fetch\\(\"http://localhost:3000/movies\\?page=1&limit=10&search=pulp\", \\{\n    headers: \\{ Authorization: `Bearer \\$\\{token\\}` \\}\n  \\}\\);\n  const body = await res\\.text\\(\\);\n  console\\.log\\(\"STATUS:\", res\\.status\\);\n  console\\.log\\(\"BODY:\", body\\);\n\\}\\)\\(\\)\\.catch\\(\\(e\\) => \\{ console\\.error\\(e\\); process\\.exit\\(1\\); \\}\\);\n'@; node -e \\$script; Pop-Location$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }

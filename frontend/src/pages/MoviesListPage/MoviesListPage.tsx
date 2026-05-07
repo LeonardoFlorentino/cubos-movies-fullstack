@@ -143,7 +143,7 @@ export function MoviesListPage() {
   const { theme } = useThemeStore();
   const navigate = useNavigate();
 
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState(search);
 
   // filter modal
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -174,6 +174,21 @@ export function MoviesListPage() {
     getMoviesAction(page, 10, search, selectedGenre);
   }, [page, search, selectedGenre, getMoviesAction]);
 
+  useEffect(() => {
+    const nextSearch = searchInput.trim();
+
+    const timeoutId = window.setTimeout(() => {
+      if (nextSearch === search) {
+        return;
+      }
+
+      setPage(1);
+      setSearch(nextSearch);
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput, search, setPage, setSearch]);
+
   const availableGenres = useMemo(() => {
     const uniqueGenres = new Set<string>();
     movies.forEach((movie) => {
@@ -192,7 +207,7 @@ export function MoviesListPage() {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPage(1);
-    setSearch(searchInput);
+    setSearch(searchInput.trim());
   };
 
   const clearSearch = () => {

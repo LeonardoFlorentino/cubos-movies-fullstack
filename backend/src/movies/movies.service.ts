@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PaginationDto } from './dto/pagination.dto';
@@ -52,22 +52,30 @@ export class MoviesService {
     const { page = 1, limit = 10, search, genre } = paginationDto;
     const skip = (page - 1) * limit;
 
-    const whereClause: Record<string, any> = { ownerId };
+    const normalizedSearch =
+      typeof search === 'string' ? search.trim().toLowerCase() : '';
+    const normalizedGenre = typeof genre === 'string' ? genre.trim() : '';
 
-    if (search && typeof search === 'string') {
-      whereClause.title = Like(`%${search}%`);
+    const query = this.moviesRepository
+      .createQueryBuilder('movie')
+      .where('movie.owner_id = :ownerId', { ownerId })
+      .orderBy('movie.created_at', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    if (normalizedSearch) {
+      query.andWhere('LOWER(movie.title) LIKE :search', {
+        search: `%${normalizedSearch}%`,
+      });
     }
 
-    if (genre && typeof genre === 'string') {
-      whereClause.genres = ArrayContains([genre]);
+    if (normalizedGenre) {
+      query.andWhere(':genre = ANY(movie.genres)', {
+        genre: normalizedGenre,
+      });
     }
 
-    const [data, total] = await this.moviesRepository.findAndCount({
-      where: whereClause,
-      order: { createdAt: 'DESC' },
-      skip,
-      take: limit,
-    });
+    const [data, total] = await query.getManyAndCount();
 
     const totalPages = Math.ceil(total / limit);
 

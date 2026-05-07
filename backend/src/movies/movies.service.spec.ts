@@ -12,8 +12,25 @@ type MockRepo<T extends object = any> = Partial<
 describe('MoviesService', () => {
   let service: MoviesService;
   let repository: MockRepo<Movie>;
+  let queryBuilder: {
+    where: jest.Mock;
+    andWhere: jest.Mock;
+    orderBy: jest.Mock;
+    skip: jest.Mock;
+    take: jest.Mock;
+    getManyAndCount: jest.Mock;
+  };
 
   beforeEach(async () => {
+    queryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn(),
+    };
+
     repository = {
       create: jest.fn(),
       save: jest.fn(),
@@ -21,6 +38,7 @@ describe('MoviesService', () => {
       findOne: jest.fn(),
       remove: jest.fn(),
       findAndCount: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -176,7 +194,7 @@ describe('MoviesService', () => {
       { id: 'movie-2', title: 'Inception', ownerId: 'user-1' },
     ];
 
-    repository.findAndCount?.mockResolvedValue([mockMovies, 2]);
+    queryBuilder.getManyAndCount.mockResolvedValue([mockMovies, 2]);
 
     const result = await service.findAllByOwnerWithPagination('user-1', {
       page: 1,
@@ -191,11 +209,21 @@ describe('MoviesService', () => {
       limit: 10,
       totalPages: 1,
     });
-    expect(repository.findAndCount).toHaveBeenCalled();
+    expect(repository.createQueryBuilder).toHaveBeenCalledWith('movie');
+    expect(queryBuilder.where).toHaveBeenCalledWith(
+      'movie.owner_id = :ownerId',
+      {
+        ownerId: 'user-1',
+      },
+    );
+    expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+      'LOWER(movie.title) LIKE :search',
+      { search: '%inter%' },
+    );
   });
 
   it('should apply genre filter in paginated query', async () => {
-    repository.findAndCount?.mockResolvedValue([[], 0]);
+    queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
     await service.findAllByOwnerWithPagination('user-1', {
       page: 1,
@@ -203,16 +231,11 @@ describe('MoviesService', () => {
       genre: 'Drama',
     });
 
-    const [queryOptions] = repository.findAndCount?.mock.calls[0] as [
-      { where?: Record<string, unknown> },
-    ];
-
-    expect(queryOptions.where?.ownerId).toBe('user-1');
-    expect(queryOptions.where?.genres).toEqual(
-      expect.objectContaining({
-        _type: 'arrayContains',
-        _value: ['Drama'],
-      }),
+    expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+      ':genre = ANY(movie.genres)',
+      {
+        genre: 'Drama',
+      },
     );
   });
 });
