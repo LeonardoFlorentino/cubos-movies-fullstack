@@ -38,4 +38,21 @@
   .password-toggle-icon {
     @apply h-[18px] w-[18px];
   }
+
+  /* Date input icons (calendar) and number input spinners in dark mode */
+  input[type="date"],
+  input[type="number"] {
+    color-scheme: dark;
+  }
+
+  input[type="date"]::placeholder,
+  input[type="number"]::placeholder {
+    @apply text-(--text-placeholder);
+  }
+
+  /* Ensure date and number inputs have proper text color */
+  input[type="date"],
+  input[type="number"] {
+    @apply dark:text-slate-100 dark:caret-violet-400;
+  }
 }

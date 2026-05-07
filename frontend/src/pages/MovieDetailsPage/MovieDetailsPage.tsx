@@ -588,7 +588,7 @@ export function MovieDetailsPage() {
                     type="date"
                     value={editForm.releaseDate}
                     onChange={handleEditChange}
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -602,7 +602,7 @@ export function MovieDetailsPage() {
                     step="0.01"
                     value={editForm.budget}
                     onChange={handleEditChange}
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -632,7 +632,7 @@ export function MovieDetailsPage() {
                     step="1"
                     value={editForm.durationMinutes}
                     onChange={handleEditChange}
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none dark:text-slate-100"
                   />
                 </div>
               </div>
