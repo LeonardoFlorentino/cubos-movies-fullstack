@@ -39,6 +39,14 @@ cd ../frontend && npm install
 cd ..
 ```
 
+1.1 Configurar variaveis de ambiente do backend
+
+```bash
+cd backend
+cp .env.example .env
+cd ..
+```
+
 2. Subir o PostgreSQL
 
 ```bash
@@ -79,8 +87,30 @@ npm run test
 
 O workflow em `.github/workflows/ci.yml` executa em push e pull request:
 
-- Backend: install, lint e testes
-- Frontend: install, lint e testes
+- Backend: install, lint, type-check e testes
+- Frontend: install, lint, type-check e testes
+
+## Troubleshooting do backend
+
+Se o backend encerrar com codigo 1 ao iniciar, valide na ordem abaixo:
+
+1. Banco ativo no Docker (`docker compose up -d`)
+2. Variaveis do backend em `backend/.env`
+3. Porta da API livre (`3000` por padrao)
+
+Para verificar conflito de porta no Windows:
+
+```powershell
+Get-NetTCPConnection -LocalPort 3000
+```
+
+Se houver processo ocupando a porta, encerre-o ou inicie o backend com outra porta:
+
+```powershell
+$env:PORT=3001
+cd backend
+npm run start:dev
+```
 
 ## Banco de dados (Docker)
 
