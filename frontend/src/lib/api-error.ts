@@ -15,6 +15,8 @@ const FALLBACK_MESSAGES: Record<string, string> = {
     "Este e-mail ja esta cadastrado. Tente entrar ou use outro endereco.",
   AUTH_UNAUTHORIZED:
     "Sua sessao expirou ou nao foi reconhecida. Entre novamente para continuar.",
+  AUTH_RESET_TOKEN_INVALID:
+    "O link de redefinicao e invalido ou expirou. Solicite um novo link.",
   VALIDATION_FAILED:
     "Alguns dados enviados sao invalidos. Revise os campos e tente novamente.",
   RESOURCE_NOT_FOUND: "Nao encontramos o recurso solicitado.",

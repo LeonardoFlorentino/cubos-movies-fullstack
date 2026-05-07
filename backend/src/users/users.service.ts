@@ -29,11 +29,23 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  findPasswordById(id: string): Promise<User | null> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
   findPasswordByEmail(email: string): Promise<User | null> {
     return this.usersRepository
       .createQueryBuilder('user')
       .addSelect('user.password')
       .where('user.email = :email', { email })
       .getOne();
+  }
+
+  async updatePasswordById(id: string, password: string): Promise<void> {
+    await this.usersRepository.update({ id }, { password });
   }
 }

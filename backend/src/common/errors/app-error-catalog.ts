@@ -23,6 +23,12 @@ export const APP_ERROR_CATALOG = {
     userMessage:
       'Sua sessao expirou ou nao foi reconhecida. Entre novamente para continuar.',
   },
+  AUTH_RESET_TOKEN_INVALID: {
+    code: 'AUTH_RESET_TOKEN_INVALID',
+    message: 'Password reset token is invalid or expired',
+    userMessage:
+      'O link de redefinicao e invalido ou expirou. Solicite um novo link para continuar.',
+  },
   VALIDATION_FAILED: {
     code: 'VALIDATION_FAILED',
     message: 'Validation failed',

@@ -1,7 +1,9 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 
@@ -12,13 +14,41 @@ describe('AuthService', () => {
     findByEmail: jest.fn(),
     create: jest.fn(),
     findPasswordByEmail: jest.fn(),
+    findPasswordById: jest.fn(),
+    updatePasswordById: jest.fn(),
   };
 
   const jwtServiceMock = {
     signAsync: jest.fn(),
+    verifyAsync: jest.fn(),
+  };
+
+  const configServiceMock = {
+    get: jest.fn((key: string, defaultValue?: string) => {
+      if (key === 'JWT_SECRET') {
+        return 'dev-secret';
+      }
+      if (key === 'MAIL_FROM') {
+        return 'no-reply@test.dev';
+      }
+      if (key === 'FRONTEND_URL') {
+        return 'http://localhost:5173';
+      }
+      if (key === 'JWT_RESET_EXPIRES_IN') {
+        return '30m';
+      }
+      return defaultValue;
+    }),
+  };
+
+  const mailServiceMock = {
+    sendPasswordResetEmail: jest.fn(),
   };
 
   beforeEach(async () => {
+    mailServiceMock.sendPasswordResetEmail.mockReset();
+    mailServiceMock.sendPasswordResetEmail.mockResolvedValue(undefined);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -29,6 +59,14 @@ describe('AuthService', () => {
         {
           provide: JwtService,
           useValue: jwtServiceMock,
+        },
+        {
+          provide: ConfigService,
+          useValue: configServiceMock,
+        },
+        {
+          provide: MailService,
+          useValue: mailServiceMock,
         },
       ],
     }).compile();
@@ -100,6 +138,70 @@ describe('AuthService', () => {
         email: 'leo@example.com',
         password: 'secret123',
       }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('should return generic success when forgot password email does not exist', async () => {
+    usersServiceMock.findByEmail.mockResolvedValue(null);
+
+    await expect(
+      authService.forgotPassword({
+        email: 'missing@example.com',
+      }),
+    ).resolves.toEqual({
+      message: 'Se o e-mail existir, enviaremos as instrucoes de recuperacao.',
+    });
+    expect(mailServiceMock.sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it('should send reset email for existing user', async () => {
+    usersServiceMock.findByEmail.mockResolvedValue({
+      id: 'user-id',
+      name: 'Leo',
+      email: 'leo@example.com',
+    });
+    jwtServiceMock.signAsync.mockResolvedValue('reset-token');
+
+    await authService.forgotPassword({ email: 'leo@example.com' });
+
+    expect(mailServiceMock.sendPasswordResetEmail).toHaveBeenCalledWith({
+      to: 'leo@example.com',
+      userName: 'Leo',
+      resetUrl: 'http://localhost:5173/reset-password?token=reset-token',
+    });
+  });
+
+  it('should reset password with a valid reset token', async () => {
+    jwtServiceMock.verifyAsync.mockResolvedValue({
+      sub: 'user-id',
+      email: 'leo@example.com',
+      purpose: 'password-reset',
+    });
+    usersServiceMock.findPasswordById.mockResolvedValue({
+      id: 'user-id',
+      email: 'leo@example.com',
+    });
+    usersServiceMock.updatePasswordById.mockResolvedValue(undefined);
+
+    await expect(
+      authService.resetPassword({
+        token: 'valid-token',
+        password: 'new-secret-123',
+      }),
+    ).resolves.toMatchObject({
+      message: 'Senha atualizada com sucesso.',
+    });
+    expect(usersServiceMock.updatePasswordById).toHaveBeenCalledWith(
+      'user-id',
+      expect.any(String),
+    );
+  });
+
+  it('should reject reset password for invalid token', async () => {
+    jwtServiceMock.verifyAsync.mockRejectedValue(new Error('invalid'));
+
+    await expect(
+      authService.resetPassword({ token: 'invalid', password: 'secret123' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

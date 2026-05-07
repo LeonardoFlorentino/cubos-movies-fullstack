@@ -125,6 +125,9 @@ export class MoviesService {
     }
 
     if (typeof updateMovieDto.releaseDate === 'string') {
+      if (movie.releaseDate !== updateMovieDto.releaseDate) {
+        movie.releaseReminderSentAt = null;
+      }
       movie.releaseDate = updateMovieDto.releaseDate;
     }
 

@@ -131,4 +131,22 @@ describe("login", () => {
         "E-mail ou senha incorretos. Confira seus dados e tente novamente.",
     });
   });
+
+  it("throws a Portuguese standardized message for network failures", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValue(new TypeError("Failed to fetch"));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      login({ email: "leo@example.com", password: "secret123" }),
+    ).rejects.toMatchObject<ApiError>({
+      name: "ApiError",
+      code: "INTERNAL_SERVER_ERROR",
+      statusCode: 0,
+      userMessage:
+        "Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.",
+    });
+  });
 });

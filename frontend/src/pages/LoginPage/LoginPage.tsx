@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { AuthCard } from "../../components/auth/AuthCard";
 import { Input } from "../../components/ui/Input/Input";
@@ -63,16 +63,12 @@ export function LoginPage() {
 
         <div className="actions-wrapper">
           <div className="actions-links">
-            <a
-              className="forgot-password-link"
-              href="#"
-              onClick={(event) => event.preventDefault()}
-            >
+            <Link className="forgot-password-link" to="/forgot-password">
               Esqueci minha senha
-            </a>
-            <a className="forgot-password-link" href="/register">
+            </Link>
+            <Link className="forgot-password-link" to="/register">
               Criar conta
-            </a>
+            </Link>
           </div>
           <button className="btn-submit" disabled={isLoading} type="submit">
             {isLoading ? "Entrando..." : "Entrar"}

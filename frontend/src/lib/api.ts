@@ -1,6 +1,8 @@
 import type {
   AuthResponse,
+  ForgotPasswordPayload,
   LoginPayload,
+  ResetPasswordPayload,
   RegisterPayload,
 } from "../types/auth";
 import { createApiError } from "./api-error";
@@ -157,14 +159,26 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token =
     localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("accessToken");
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options?.headers ?? {}),
-    },
-    ...options,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options?.headers ?? {}),
+      },
+      ...options,
+    });
+  } catch {
+    throw createApiError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Network request failed",
+      userMessage:
+        "Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.",
+      statusCode: 0,
+    });
+  }
 
   if (!response.ok) {
     const payload = await parseResponseBody(response);
@@ -184,6 +198,20 @@ export function login(payload: LoginPayload) {
 
 export function register(payload: RegisterPayload) {
   return request<AuthResponse>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function forgotPassword(payload: ForgotPasswordPayload) {
+  return request<{ message: string }>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resetPassword(payload: ResetPasswordPayload) {
+  return request<{ message: string }>("/auth/reset-password", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -246,13 +274,25 @@ export async function uploadMovieImage(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${API_URL}/movies/upload`, {
-    method: "POST",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: formData,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/movies/upload`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+  } catch {
+    throw createApiError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Network request failed",
+      userMessage:
+        "Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.",
+      statusCode: 0,
+    });
+  }
 
   if (!response.ok) {
     const payload = await parseResponseBody(response);

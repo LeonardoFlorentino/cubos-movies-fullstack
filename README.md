@@ -83,6 +83,29 @@ npm run lint
 npm run test
 ```
 
+## Funcionalidades recentes
+
+### Lembrete de estreia por e-mail
+
+- Filmes com data de lancamento futura recebem lembrete automaticamente na data de estreia.
+- O backend executa o job diario e envia apenas uma vez por filme (com controle por `release_reminder_sent_at`).
+
+### Esqueci minha senha
+
+- Endpoint para solicitar recuperacao: `POST /auth/forgot-password`
+- Endpoint para redefinir senha: `POST /auth/reset-password`
+- Frontend com telas dedicadas em `/forgot-password` e `/reset-password`
+
+## Variaveis de ambiente (backend)
+
+Confira `backend/.env.example` e configure principalmente:
+
+- `FRONTEND_URL`
+- `JWT_RESET_SECRET`
+- `JWT_RESET_EXPIRES_IN`
+- `RESEND_API_KEY`
+- `MAIL_FROM`
+
 ## CI (GitHub Actions)
 
 O workflow em `.github/workflows/ci.yml` executa em push e pull request:

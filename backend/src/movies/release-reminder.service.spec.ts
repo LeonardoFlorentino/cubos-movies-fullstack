@@ -1,16 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import nodemailer from 'nodemailer';
+import { MailService } from '../mail/mail.service';
 import { Movie } from './entities/movie.entity';
 import { ReleaseReminderService } from './release-reminder.service';
-
-jest.mock('nodemailer', () => ({
-  __esModule: true,
-  default: {
-    createTransport: jest.fn(),
-  },
-}));
 
 type MockMovieRepository = {
   find: jest.Mock;
@@ -20,16 +12,13 @@ type MockMovieRepository = {
 describe('ReleaseReminderService', () => {
   let service: ReleaseReminderService;
   let moviesRepository: MockMovieRepository;
-  const sendMailMock = jest.fn();
+  const mailServiceMock = {
+    sendReleaseReminderEmail: jest.fn(),
+  };
 
   beforeEach(async () => {
-    sendMailMock.mockReset();
-    sendMailMock.mockResolvedValue({});
-
-    (nodemailer.createTransport as jest.Mock).mockReset();
-    (nodemailer.createTransport as jest.Mock).mockReturnValue({
-      sendMail: sendMailMock,
-    });
+    mailServiceMock.sendReleaseReminderEmail.mockReset();
+    mailServiceMock.sendReleaseReminderEmail.mockResolvedValue(undefined);
 
     moviesRepository = {
       find: jest.fn(),
@@ -44,15 +33,8 @@ describe('ReleaseReminderService', () => {
           useValue: moviesRepository,
         },
         {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string, defaultValue?: string) => {
-              if (key === 'MAIL_FROM') {
-                return 'no-reply@test.dev';
-              }
-              return defaultValue;
-            }),
-          },
+          provide: MailService,
+          useValue: mailServiceMock,
         },
       ],
     }).compile();
@@ -60,11 +42,11 @@ describe('ReleaseReminderService', () => {
     service = module.get<ReleaseReminderService>(ReleaseReminderService);
   });
 
-  it('sends reminders for tomorrow releases and marks movies as reminded', async () => {
+  it('sends reminders for same-day releases and marks movies as reminded', async () => {
     const movie = {
       id: 'movie-1',
       title: 'Arrival',
-      releaseDate: '2026-05-04',
+      releaseDate: '2026-05-03',
       releaseReminderSentAt: null,
       owner: {
         name: 'Leona',
@@ -79,12 +61,13 @@ describe('ReleaseReminderService', () => {
       new Date('2026-05-03T12:00:00.000Z'),
     );
 
-    const findCallArgs = moviesRepository.find.mock.calls[0] as [
-      { where: { releaseDate: string } },
-    ];
-
-    expect(findCallArgs[0].where.releaseDate).toBe('2026-05-04');
-    expect(sendMailMock).toHaveBeenCalledTimes(1);
+    expect(moviesRepository.find).toHaveBeenCalledTimes(1);
+    expect(mailServiceMock.sendReleaseReminderEmail).toHaveBeenCalledWith({
+      to: 'leona@example.com',
+      userName: 'Leona',
+      movieTitle: 'Arrival',
+      releaseDate: '2026-05-03',
+    });
     expect(moviesRepository.save).toHaveBeenCalledTimes(1);
     expect(movie.releaseReminderSentAt).toBeInstanceOf(Date);
     expect(sentCount).toBe(1);
@@ -94,7 +77,7 @@ describe('ReleaseReminderService', () => {
     const movieWithoutEmail = {
       id: 'movie-2',
       title: 'No Mail',
-      releaseDate: '2026-05-04',
+      releaseDate: '2026-05-03',
       releaseReminderSentAt: null,
       owner: {
         name: 'No Email User',
@@ -108,7 +91,7 @@ describe('ReleaseReminderService', () => {
       new Date('2026-05-03T12:00:00.000Z'),
     );
 
-    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(mailServiceMock.sendReleaseReminderEmail).not.toHaveBeenCalled();
     expect(moviesRepository.save).not.toHaveBeenCalled();
     expect(sentCount).toBe(0);
   });

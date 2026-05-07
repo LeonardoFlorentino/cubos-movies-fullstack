@@ -150,6 +150,46 @@ describe('MoviesService', () => {
     );
   });
 
+  it('should clear release reminder flag when release date changes', async () => {
+    const originalReminderDate = new Date('2026-01-02T08:00:00.000Z');
+
+    repository.findOne?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-1',
+      releaseDate: '2026-05-05',
+      releaseReminderSentAt: originalReminderDate,
+      budget: '1.00',
+      title: 'Title',
+      description: 'Description',
+      imageUrl: null,
+      trailer: null,
+    });
+
+    repository.save?.mockResolvedValue({
+      id: 'movie-1',
+      ownerId: 'user-1',
+      releaseDate: '2026-05-10',
+      releaseReminderSentAt: null,
+      budget: '1.00',
+      title: 'Title',
+      description: 'Description',
+      imageUrl: null,
+      trailer: null,
+    });
+
+    const updated = await service.updateByOwner('user-1', 'movie-1', {
+      releaseDate: '2026-05-10',
+    });
+
+    expect(updated.releaseReminderSentAt).toBeNull();
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releaseDate: '2026-05-10',
+        releaseReminderSentAt: null,
+      }),
+    );
+  });
+
   it('should deny update when movie belongs to another user', async () => {
     repository.findOne?.mockResolvedValue({
       id: 'movie-1',
