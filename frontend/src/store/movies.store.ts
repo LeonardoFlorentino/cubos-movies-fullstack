@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getErrorMessage } from "../lib/api-error";
 import {
   getMovies as fetchMovies,
   getMovieById as fetchMovieById,
@@ -65,8 +66,7 @@ export const useMoviesStore = create<MoviesState>((set) => ({
       });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch movies",
+        error: getErrorMessage(error, "Nao foi possivel carregar seus filmes."),
         isLoading: false,
       });
     }
@@ -79,7 +79,7 @@ export const useMoviesStore = create<MoviesState>((set) => ({
       set({ currentMovie: movie, isLoading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch movie",
+        error: getErrorMessage(error, "Nao foi possivel carregar o filme."),
         isLoading: false,
       });
     }
@@ -98,8 +98,7 @@ export const useMoviesStore = create<MoviesState>((set) => ({
       return true;
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to create movie",
+        error: getErrorMessage(error, "Nao foi possivel salvar o filme."),
         isLoading: false,
       });
       return false;
@@ -116,8 +115,7 @@ export const useMoviesStore = create<MoviesState>((set) => ({
       }));
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to delete movie",
+        error: getErrorMessage(error, "Nao foi possivel excluir o filme."),
         isLoading: false,
       });
     }

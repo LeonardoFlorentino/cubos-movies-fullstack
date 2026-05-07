@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { uploadMovieImage } from "./api";
+import { login, uploadMovieImage } from "./api";
+import { ApiError } from "./api-error";
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -89,5 +90,45 @@ describe("uploadMovieImage", () => {
     await expect(uploadMovieImage(file)).rejects.toThrow(
       "Invalid image format",
     );
+  });
+});
+
+describe("login", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.stubGlobal("localStorage", new MemoryStorage());
+  });
+
+  it("throws a typed ApiError with the friendly backend message", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      headers: {
+        get: vi.fn().mockReturnValue("application/json"),
+      },
+      json: vi.fn().mockResolvedValue({
+        error: {
+          code: "AUTH_INVALID_CREDENTIALS",
+          message: "Invalid credentials",
+          userMessage:
+            "E-mail ou senha incorretos. Confira seus dados e tente novamente.",
+          statusCode: 401,
+          path: "/auth/login",
+          timestamp: "2026-05-07T00:00:00.000Z",
+        },
+      }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      login({ email: "leo@example.com", password: "wrong-password" }),
+    ).rejects.toMatchObject<ApiError>({
+      name: "ApiError",
+      code: "AUTH_INVALID_CREDENTIALS",
+      statusCode: 401,
+      userMessage:
+        "E-mail ou senha incorretos. Confira seus dados e tente novamente.",
+    });
   });
 });

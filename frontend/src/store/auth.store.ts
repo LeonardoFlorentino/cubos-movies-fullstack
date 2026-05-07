@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getErrorMessage } from "../lib/api-error";
 import { login, register } from "../lib/api";
 import type { AuthUser, LoginPayload, RegisterPayload } from "../types/auth";
 
@@ -33,7 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : "Login failed",
+        error: getErrorMessage(error, "Nao foi possivel entrar agora."),
       });
     }
   },
@@ -51,7 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : "Sign up failed",
+        error: getErrorMessage(error, "Nao foi possivel criar sua conta."),
       });
     }
   },

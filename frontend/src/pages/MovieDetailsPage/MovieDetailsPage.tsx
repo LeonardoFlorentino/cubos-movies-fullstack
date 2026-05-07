@@ -4,6 +4,7 @@ import { AuthHeader } from "../../components/auth/AuthHeader";
 import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
 import { deleteMovie, updateMovie, uploadMovieImage } from "../../lib/api";
+import { getErrorMessage } from "../../lib/api-error";
 import { toast } from "sonner";
 import {
   compressImageIfNeeded,
@@ -211,11 +212,9 @@ export function MovieDetailsPage() {
         toast.success("Imagem enviada com sucesso.");
       }
     } catch (uploadError) {
-      const message =
-        uploadError instanceof Error
-          ? uploadError.message
-          : "Não foi possível enviar a imagem.";
-      toast.error(message);
+      toast.error(
+        getErrorMessage(uploadError, "Não foi possível enviar a imagem."),
+      );
     } finally {
       setIsUploadingEditImage(false);
       e.target.value = "";
@@ -258,11 +257,9 @@ export function MovieDetailsPage() {
       setIsEditOpen(false);
       toast.success("Filme atualizado com sucesso.");
     } catch (editError) {
-      const message =
-        editError instanceof Error
-          ? editError.message
-          : "Não foi possível editar o filme.";
-      toast.error(message);
+      toast.error(
+        getErrorMessage(editError, "Não foi possível editar o filme."),
+      );
     } finally {
       setIsSavingEdit(false);
     }
@@ -279,11 +276,9 @@ export function MovieDetailsPage() {
       toast.success("Filme deletado com sucesso.");
       navigate("/movies");
     } catch (deleteError) {
-      const message =
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Não foi possível deletar o filme.";
-      toast.error(message);
+      toast.error(
+        getErrorMessage(deleteError, "Não foi possível deletar o filme."),
+      );
     } finally {
       setIsDeleting(false);
     }

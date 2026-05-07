@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
+import { getAppErrorDefinition } from '../common/errors/app-error-catalog';
 
 type StorageProvider = 's3' | 'r2';
 
@@ -33,17 +34,21 @@ export class StorageService {
 
   async uploadMovieImage(ownerId: string, file?: UploadedImageFile) {
     if (!file) {
-      throw new BadRequestException('Image file is required');
+      throw new BadRequestException(
+        getAppErrorDefinition('MOVIE_IMAGE_REQUIRED'),
+      );
     }
 
     if (!this.allowedMimeTypes.has(file.mimetype)) {
       throw new BadRequestException(
-        'Unsupported file format. Use JPEG, PNG or WEBP',
+        getAppErrorDefinition('MOVIE_IMAGE_TYPE_INVALID'),
       );
     }
 
     if (file.size > this.maxBytes) {
-      throw new BadRequestException(`Image must be up to ${MAX_UPLOAD_MB}MB`);
+      throw new BadRequestException(
+        getAppErrorDefinition('MOVIE_IMAGE_TOO_LARGE'),
+      );
     }
 
     const provider = this.getProvider();
@@ -65,7 +70,9 @@ export class StorageService {
         imageUrl: this.buildPublicUrl(provider, bucket, key),
       };
     } catch {
-      throw new InternalServerErrorException('Could not upload image');
+      throw new InternalServerErrorException(
+        getAppErrorDefinition('STORAGE_UPLOAD_FAILED'),
+      );
     }
   }
 
@@ -83,7 +90,7 @@ export class StorageService {
 
     if (!value) {
       throw new InternalServerErrorException(
-        'Storage bucket is not configured',
+        getAppErrorDefinition('INTERNAL_SERVER_ERROR'),
       );
     }
 
@@ -99,7 +106,9 @@ export class StorageService {
       this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
 
     if (!accessKeyId || !secretAccessKey) {
-      throw new InternalServerErrorException('Storage credentials are missing');
+      throw new InternalServerErrorException(
+        getAppErrorDefinition('INTERNAL_SERVER_ERROR'),
+      );
     }
 
     if (provider === 'r2') {
@@ -111,7 +120,9 @@ export class StorageService {
           : undefined);
 
       if (!endpoint) {
-        throw new InternalServerErrorException('R2 endpoint is not configured');
+        throw new InternalServerErrorException(
+          getAppErrorDefinition('INTERNAL_SERVER_ERROR'),
+        );
       }
 
       return new S3Client({
@@ -156,7 +167,7 @@ export class StorageService {
 
     if (provider === 'r2') {
       throw new InternalServerErrorException(
-        'R2 public URL is not configured. Set R2_PUBLIC_BASE_URL',
+        getAppErrorDefinition('INTERNAL_SERVER_ERROR'),
       );
     }
 

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { getAppErrorDefinition } from '../common/errors/app-error-catalog';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PaginationDto } from './dto/pagination.dto';
@@ -94,11 +95,11 @@ export class MoviesService {
     });
 
     if (!movie) {
-      throw new NotFoundException('Movie not found');
+      throw new NotFoundException(getAppErrorDefinition('RESOURCE_NOT_FOUND'));
     }
 
     if (movie.ownerId !== ownerId) {
-      throw new ForbiddenException('You cannot access this movie');
+      throw new ForbiddenException(getAppErrorDefinition('ACCESS_FORBIDDEN'));
     }
 
     return movie;

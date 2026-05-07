@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { AuthCard } from "../../components/auth/AuthCard";
+import { Input } from "../../components/ui/Input/Input";
 import { registerSchema } from "../../lib/auth.schemas";
 import { useAuthStore } from "../../store/auth.store";
 
@@ -61,29 +62,27 @@ export function RegisterPage() {
           />
         </label>
 
-        <label className="input-group">
-          <span className="input-label">Senha</span>
-          <input
-            autoComplete="new-password"
-            className="register-input"
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Digite sua senha"
-            type="password"
-            value={password}
-          />
-        </label>
+        <Input
+          label="Senha"
+          autoComplete="new-password"
+          className="register-input"
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Digite sua senha"
+          type="password"
+          allowPasswordToggle
+          value={password}
+        />
 
-        <label className="input-group">
-          <span className="input-label">Confirmação de senha</span>
-          <input
-            autoComplete="new-password"
-            className="register-input"
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            placeholder="Digite sua senha novamente"
-            type="password"
-            value={confirmPassword}
-          />
-        </label>
+        <Input
+          label="Confirmação de senha"
+          autoComplete="new-password"
+          className="register-input"
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          placeholder="Digite sua senha novamente"
+          type="password"
+          allowPasswordToggle
+          value={confirmPassword}
+        />
 
         {(validationError || error) && (
           <p className="error-container">{validationError || error}</p>

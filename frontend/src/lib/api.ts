@@ -3,6 +3,7 @@ import type {
   LoginPayload,
   RegisterPayload,
 } from "../types/auth";
+import { createApiError } from "./api-error";
 import type {
   Movie,
   PaginatedMoviesResponse,
@@ -12,6 +13,20 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const TOKEN_KEY = "cubos_movies_token";
+
+type ErrorEnvelope = {
+  error?: {
+    code?: string;
+    message?: string;
+    userMessage?: string;
+    statusCode?: number;
+    details?: unknown;
+    path?: string;
+    timestamp?: string;
+  };
+  message?: string | string[];
+  errorMessage?: string;
+};
 
 type RawMovie = {
   id: string;
@@ -69,6 +84,75 @@ function normalizePaginatedMoviesResponse(payload: {
   };
 }
 
+async function parseResponseBody(response: Response) {
+  const contentType = response.headers?.get?.("content-type") ?? "";
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (
+    contentType.includes("application/json") &&
+    typeof response.json === "function"
+  ) {
+    return (await response.json()) as unknown;
+  }
+
+  if (typeof response.text === "function") {
+    const text = await response.text();
+    return text.length > 0 ? text : null;
+  }
+
+  if (typeof response.json === "function") {
+    return (await response.json()) as unknown;
+  }
+
+  return null;
+}
+
+function buildApiErrorFromResponse(status: number, payload: unknown) {
+  if (payload && typeof payload === "object") {
+    const envelope = payload as ErrorEnvelope;
+
+    if (envelope.error) {
+      return createApiError({
+        code: envelope.error.code,
+        message: envelope.error.message,
+        userMessage: envelope.error.userMessage,
+        statusCode: envelope.error.statusCode ?? status,
+        details: envelope.error.details,
+        path: envelope.error.path,
+        timestamp: envelope.error.timestamp,
+      });
+    }
+
+    const message = Array.isArray(envelope.message)
+      ? envelope.message[0]
+      : (envelope.message ?? envelope.errorMessage);
+
+    return createApiError({
+      code: status === 400 ? "VALIDATION_FAILED" : undefined,
+      message,
+      details: Array.isArray(envelope.message) ? envelope.message : undefined,
+      statusCode: status,
+    });
+  }
+
+  if (typeof payload === "string") {
+    return createApiError({
+      code: status === 413 ? "MOVIE_IMAGE_TOO_LARGE" : undefined,
+      message: payload,
+      userMessage:
+        status === 413 ? "Imagem muito grande. Tamanho máximo: 5MB." : payload,
+      statusCode: status,
+    });
+  }
+
+  return createApiError({
+    statusCode: status,
+  });
+}
+
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token =
     localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("accessToken");
@@ -83,11 +167,12 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Request failed");
+    const payload = await parseResponseBody(response);
+    throw buildApiErrorFromResponse(response.status, payload);
   }
 
-  return (await response.json()) as T;
+  const payload = await parseResponseBody(response);
+  return payload as T;
 }
 
 export function login(payload: LoginPayload) {
@@ -170,13 +255,9 @@ export async function uploadMovieImage(file: File) {
   });
 
   if (!response.ok) {
-    if (response.status === 413) {
-      throw new Error("Imagem muito grande. Tamanho máximo: 5MB.");
-    }
-
-    const message = await response.text();
-    throw new Error(message || "Image upload failed");
+    const payload = await parseResponseBody(response);
+    throw buildApiErrorFromResponse(response.status, payload);
   }
 
-  return (await response.json()) as { imageUrl: string };
+  return (await parseResponseBody(response)) as { imageUrl: string };
 }

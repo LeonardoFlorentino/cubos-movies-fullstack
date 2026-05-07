@@ -8,6 +8,7 @@ import filterPropertiesGraphic from "../../assets/filter-properties.svg";
 import filterPropertiesGraphicLight from "../../assets/filter-properties-light.svg";
 import type { CreateMoviePayload } from "../../types/movies";
 import { toast } from "sonner";
+import { getErrorMessage } from "../../lib/api-error";
 import { uploadMovieImage } from "../../lib/api";
 import {
   compressImageIfNeeded,
@@ -320,11 +321,9 @@ export function MoviesListPage() {
         toast.success("Imagem enviada com sucesso.");
       }
     } catch (uploadError) {
-      const message =
-        uploadError instanceof Error
-          ? uploadError.message
-          : "Não foi possível enviar a imagem.";
-      toast.error(message);
+      toast.error(
+        getErrorMessage(uploadError, "Não foi possível enviar a imagem."),
+      );
     } finally {
       setIsUploadingImage(false);
       e.target.value = "";

@@ -52,6 +52,7 @@ export function LoginPage() {
         <Input
           label="Senha"
           type="password"
+          allowPasswordToggle
           placeholder="Digite sua senha"
           value={password}
           onChange={(event) => setPassword(event.target.value)}

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { getAppErrorDefinition } from '../common/errors/app-error-catalog';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
@@ -25,7 +26,9 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
-      throw new ConflictException('Email already in use');
+      throw new ConflictException(
+        getAppErrorDefinition('AUTH_EMAIL_ALREADY_IN_USE'),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
@@ -41,7 +44,9 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findPasswordByEmail(loginDto.email);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        getAppErrorDefinition('AUTH_INVALID_CREDENTIALS'),
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -49,7 +54,9 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        getAppErrorDefinition('AUTH_INVALID_CREDENTIALS'),
+      );
     }
 
     return this.buildAuthResponse(user);
