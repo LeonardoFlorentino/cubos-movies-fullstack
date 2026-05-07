@@ -593,20 +593,6 @@ export function MoviesListPage() {
                           </svg>
                         </div>
                       )}
-
-                      <div className="absolute inset-0 flex items-end justify-end gap-2 bg-gradient-to-t from-black/70 via-transparent to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setConfirmDeleteId(movie.id);
-                          }}
-                          className="rounded-md bg-red-600/80 px-2 py-1 text-xs font-semibold text-white backdrop-blur hover:bg-red-500"
-                          aria-label={`Deletar ${movie.title}`}
-                        >
-                          Deletar
-                        </button>
-                      </div>
                     </div>
 
                     <div className="flex flex-1 flex-col gap-1 p-3">
