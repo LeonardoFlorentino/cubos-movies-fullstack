@@ -11,10 +11,7 @@ import type { CreateMoviePayload } from "../../types/movies";
 import { toast } from "sonner";
 import { getErrorMessage } from "../../lib/api-error";
 import { uploadMovieImage } from "../../lib/api";
-import {
-  compressImageIfNeeded,
-  formatMegabytes,
-} from "../../lib/image-compression";
+import { compressImageIfNeeded } from "../../lib/image-compression";
 
 // ─── genre options ──────────────────────────────────────────────────────────
 const GENRE_OPTIONS = [
@@ -179,6 +176,7 @@ export function MoviesListPage() {
   const [fieldErrors, setFieldErrors] = useState<AddMovieFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [releaseDateInput, setReleaseDateInput] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
   const [genresInput, setGenresInput] = useState<string[]>([]);
@@ -319,6 +317,7 @@ export function MoviesListPage() {
     setFormError("");
     setFieldErrors({});
     setIsUploadingImage(false);
+    setHasUploadedImage(false);
     setAddOpen(true);
   };
 
@@ -331,14 +330,7 @@ export function MoviesListPage() {
       const prepared = await compressImageIfNeeded(file);
       const { imageUrl } = await uploadMovieImage(prepared.file);
       setForm((prev) => ({ ...prev, imageUrl }));
-
-      if (prepared.wasCompressed) {
-        toast.success(
-          `Imagem comprimida (${formatMegabytes(prepared.originalSize)} -> ${formatMegabytes(prepared.finalSize)}) e enviada com sucesso.`,
-        );
-      } else {
-        toast.success("Imagem enviada com sucesso.");
-      }
+      setHasUploadedImage(true);
     } catch (uploadError) {
       toast.error(
         getErrorMessage(uploadError, "Não foi possível enviar a imagem."),
@@ -926,33 +918,105 @@ export function MoviesListPage() {
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  URL da imagem (poster)
+                  Imagem do filme
                 </label>
-                <input
-                  name="imageUrl"
-                  type="url"
-                  value={form.imageUrl ?? ""}
-                  onChange={handleFormChange}
-                  className="input-field"
-                  placeholder="https://..."
-                />
-                <div className="mt-2 flex items-center gap-2">
-                  <label className="cursor-pointer rounded-md border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/60">
-                    {isUploadingImage ? "Enviando..." : "Upload imagem"}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                      disabled={isUploadingImage}
-                    />
-                  </label>
-                  {form.imageUrl?.trim() && (
-                    <span className="text-xs text-emerald-300">
-                      URL preenchida automaticamente
-                    </span>
+                <label
+                  className={`group relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                    isUploadingImage
+                      ? "cursor-not-allowed border-slate-700 bg-slate-800/60 text-slate-500"
+                      : "border-violet-500/60 bg-violet-600/10 text-violet-300 hover:border-violet-400 hover:bg-violet-600/25 hover:text-violet-200 active:scale-[0.98]"
+                  }`}
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4"
+                        />
+                      </svg>
+                      Carregar imagem
+                    </>
                   )}
-                </div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={isUploadingImage}
+                  />
+                </label>
+
+                {form.imageUrl?.trim() && (
+                  <div className="mt-3 overflow-hidden rounded-lg border border-slate-700 bg-slate-800/70 p-2">
+                    <div className="relative overflow-hidden rounded-md">
+                      <img
+                        src={form.imageUrl}
+                        alt="Preview da imagem do filme"
+                        className="h-44 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((prev) => ({ ...prev, imageUrl: "" }));
+                          setHasUploadedImage(false);
+                        }}
+                        className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-black/80"
+                        aria-label="Descartar imagem"
+                        title="Descartar imagem"
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    {hasUploadedImage && (
+                      <p className="mt-2 text-xs text-slate-300">
+                        Imagem carregada.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

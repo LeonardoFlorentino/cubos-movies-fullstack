@@ -25,6 +25,7 @@
     "/^Push-Location \"C:\\\\Users\\\\leona\\\\projects\\\\CubosMoviesFullStack\\\\backend\"; \\$script = @'\nconst jwt = require\\(\"jsonwebtoken\"\\);\nconst token = jwt\\.sign\\(\\{ sub: \"11111111-1111-1111-1111-111111111111\", email: \"demo@example\\.com\" \\}, \"dev-secret\", \\{ expiresIn: \"1h\" \\}\\);\n\\(async \\(\\) => \\{\n  const res = await fetch\\(\"http://localhost:3000/movies\\?page=1&limit=10&search=pulp\", \\{\n    headers: \\{ Authorization: `Bearer \\$\\{token\\}` \\}\n  \\}\\);\n  const body = await res\\.text\\(\\);\n  console\\.log\\(\"STATUS:\", res\\.status\\);\n  console\\.log\\(\"BODY:\", body\\);\n\\}\\)\\(\\)\\.catch\\(\\(e\\) => \\{ console\\.error\\(e\\); process\\.exit\\(1\\); \\}\\);\n'@; node -e \\$script; Pop-Location$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "git commit": true
   }
 }

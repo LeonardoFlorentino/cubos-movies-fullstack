@@ -1,4 +1,4 @@
-export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_IMAGE_UPLOAD_BYTES = 500 * 1024;
 
 type CompressionResult = {
   file: File;
@@ -7,7 +7,7 @@ type CompressionResult = {
   finalSize: number;
 };
 
-const MIN_QUALITY = 0.45;
+const MIN_QUALITY = 0.18;
 const SCALE_STEP = 0.85;
 const MIN_DIMENSION = 640;
 const MAX_ATTEMPTS = 12;

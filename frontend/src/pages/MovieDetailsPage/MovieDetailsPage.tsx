@@ -7,10 +7,7 @@ import { useAuthStore } from "../../store/auth.store";
 import { deleteMovie, updateMovie, uploadMovieImage } from "../../lib/api";
 import { getErrorMessage } from "../../lib/api-error";
 import { toast } from "sonner";
-import {
-  compressImageIfNeeded,
-  formatMegabytes,
-} from "../../lib/image-compression";
+import { compressImageIfNeeded } from "../../lib/image-compression";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -166,6 +163,7 @@ export function MovieDetailsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isUploadingEditImage, setIsUploadingEditImage] = useState(false);
+  const [hasUploadedEditImage, setHasUploadedEditImage] = useState(false);
   const [editGenres, setEditGenres] = useState<string[]>([]);
   const [releaseDateInput, setReleaseDateInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -234,6 +232,7 @@ export function MovieDetailsPage() {
     setEditGenres([...(currentMovie.genres ?? [])]);
     setReleaseDateInput(isoToBrDate(currentMovie.releaseDate));
     setIsUploadingEditImage(false);
+    setHasUploadedEditImage(false);
     setIsEditOpen(true);
   };
 
@@ -266,14 +265,7 @@ export function MovieDetailsPage() {
       const prepared = await compressImageIfNeeded(file);
       const { imageUrl } = await uploadMovieImage(prepared.file);
       setEditForm((prev) => ({ ...prev, imageUrl }));
-
-      if (prepared.wasCompressed) {
-        toast.success(
-          `Imagem comprimida (${formatMegabytes(prepared.originalSize)} -> ${formatMegabytes(prepared.finalSize)}) e enviada com sucesso.`,
-        );
-      } else {
-        toast.success("Imagem enviada com sucesso.");
-      }
+      setHasUploadedEditImage(true);
     } catch (uploadError) {
       toast.error(
         getErrorMessage(uploadError, "Não foi possível enviar a imagem."),
@@ -797,7 +789,7 @@ export function MovieDetailsPage() {
                           d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4"
                         />
                       </svg>
-                      Upload de imagem
+                      Carregar imagem
                     </>
                   )}
                   <input
@@ -808,10 +800,45 @@ export function MovieDetailsPage() {
                     disabled={isUploadingEditImage}
                   />
                 </label>
-                {editForm.imageUrl && (
-                  <p className="mt-1.5 truncate text-xs text-slate-500">
-                    {editForm.imageUrl}
-                  </p>
+                {editForm.imageUrl.trim() && (
+                  <div className="mt-3 overflow-hidden rounded-lg border border-slate-700 bg-slate-800/70 p-2">
+                    <div className="relative overflow-hidden rounded-md">
+                      <img
+                        src={editForm.imageUrl}
+                        alt="Preview da imagem do filme"
+                        className="h-44 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditForm((prev) => ({ ...prev, imageUrl: "" }));
+                          setHasUploadedEditImage(false);
+                        }}
+                        className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-black/80"
+                        aria-label="Descartar imagem"
+                        title="Descartar imagem"
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    {hasUploadedEditImage && (
+                      <p className="mt-2 text-xs text-slate-300">
+                        Imagem carregada.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
