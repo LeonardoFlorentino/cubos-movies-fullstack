@@ -4,6 +4,7 @@ import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
 import { useThemeStore } from "../../store/theme.store";
 import { AuthHeader } from "../../components/auth/AuthHeader";
+import { MoviePoster } from "../../components/ui/MoviePoster";
 import filterPropertiesGraphic from "../../assets/filter-properties.svg";
 import filterPropertiesGraphicLight from "../../assets/filter-properties-light.svg";
 import type { CreateMoviePayload } from "../../types/movies";
@@ -590,23 +591,11 @@ export function MoviesListPage() {
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-[rgba(96,97,120,0.32)] bg-[rgba(36,36,43,0.92)] transition hover:-translate-y-0.5 hover:border-violet-400/50 hover:shadow-[0_8px_32px_rgba(142,78,198,0.18)]"
                   >
                     <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#16161e]">
-                      {movie.imageUrl ? (
-                        <img
-                          src={movie.imageUrl}
-                          alt={movie.title}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-slate-600">
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="h-14 w-14 opacity-30"
-                          >
-                            <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v12h16V6H4zm6 2l5 4-5 4V8z" />
-                          </svg>
-                        </div>
-                      )}
+                      <MoviePoster
+                        src={movie.imageUrl}
+                        title={movie.title}
+                        imageClassName="transition duration-300 group-hover:scale-105"
+                      />
                     </div>
 
                     <div className="flex flex-1 flex-col gap-1 p-3">

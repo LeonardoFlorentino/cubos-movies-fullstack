@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AuthHeader } from "../../components/auth/AuthHeader";
+import { MoviePoster } from "../../components/ui/MoviePoster";
 import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
 import { deleteMovie, updateMovie, uploadMovieImage } from "../../lib/api";
@@ -336,13 +337,14 @@ export function MovieDetailsPage() {
         {!isLoading && currentMovie && details && (
           <section className="overflow-hidden rounded-2xl border border-slate-700/70 bg-[#111827] shadow-[0_20px_70px_rgba(2,6,23,0.65)]">
             <div className="relative">
-              {currentMovie.imageUrl && (
-                <img
+              <div className="h-40 w-full">
+                <MoviePoster
                   src={currentMovie.imageUrl}
-                  alt={currentMovie.title}
-                  className="h-40 w-full object-cover opacity-35"
+                  title={currentMovie.title}
+                  imageClassName="opacity-35"
+                  fallbackClassName="opacity-85"
                 />
-              )}
+              </div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172ad4] to-[#0f172a95]" />
               <div className="absolute inset-x-0 bottom-0 top-0 flex items-end p-6">
                 <div className="flex w-full items-end justify-between gap-4">
@@ -378,17 +380,11 @@ export function MovieDetailsPage() {
 
             <div className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
               <aside className="overflow-hidden rounded-lg border border-slate-700/80 bg-slate-900">
-                {currentMovie.imageUrl ? (
-                  <img
-                    src={currentMovie.imageUrl}
-                    alt={currentMovie.title}
-                    className="aspect-[2/3] w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex aspect-[2/3] items-center justify-center text-slate-500">
-                    Sem capa
-                  </div>
-                )}
+                <MoviePoster
+                  src={currentMovie.imageUrl}
+                  title={currentMovie.title}
+                  className="aspect-[2/3]"
+                />
               </aside>
 
               <div className="space-y-4">
