@@ -27,7 +27,9 @@ export function RegisterPage() {
     const result = registerSchema.safeParse({ name, email, password });
 
     if (!result.success) {
-      setValidationError(result.error.issues[0]?.message ?? "Invalid form");
+      setValidationError(
+        result.error.issues[0]?.message ?? "Revise os dados informados.",
+      );
       return;
     }
 
@@ -37,7 +39,7 @@ export function RegisterPage() {
 
   return (
     <AuthCard cardClassName="mt-8 max-[820px]:mt-0">
-      <form className="register-form" onSubmit={handleSubmit}>
+      <form className="register-form" onSubmit={handleSubmit} noValidate>
         <label className="input-group">
           <span className="input-label">Nome</span>
           <input

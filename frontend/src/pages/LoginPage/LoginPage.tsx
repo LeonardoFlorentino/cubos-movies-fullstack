@@ -25,7 +25,9 @@ export function LoginPage() {
     const result = loginSchema.safeParse({ email, password });
 
     if (!result.success) {
-      setValidationError(result.error.issues[0]?.message ?? "Invalid form");
+      setValidationError(
+        result.error.issues[0]?.message ?? "Revise os dados informados.",
+      );
       return;
     }
 
@@ -39,7 +41,7 @@ export function LoginPage() {
 
   return (
     <AuthCard cardClassName="auth-card-custom">
-      <form className="login-form" onSubmit={handleSubmit}>
+      <form className="login-form" onSubmit={handleSubmit} noValidate>
         <Input
           label="Nome/E-mail"
           type="email"

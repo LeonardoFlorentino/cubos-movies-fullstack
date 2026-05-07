@@ -50,11 +50,11 @@ function App() {
       />
       <Routes>
         <Route element={<Navigate replace to="/movies" />} path="/" />
+        <Route element={<ResetPasswordPage />} path="/reset-password" />
         <Route element={<PublicOnlyRoute />}>
           <Route element={<LoginPage />} path="/login" />
           <Route element={<RegisterPage />} path="/register" />
           <Route element={<ForgotPasswordPage />} path="/forgot-password" />
-          <Route element={<ResetPasswordPage />} path="/reset-password" />
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route element={<MoviesListPage />} path="/movies" />

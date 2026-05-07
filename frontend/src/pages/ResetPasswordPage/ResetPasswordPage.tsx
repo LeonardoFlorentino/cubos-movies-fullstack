@@ -29,7 +29,9 @@ export function ResetPasswordPage() {
 
     const result = resetPasswordSchema.safeParse({ token, password });
     if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Invalid form");
+      setError(
+        result.error.issues[0]?.message ?? "Revise os dados informados.",
+      );
       return;
     }
 
@@ -59,7 +61,7 @@ export function ResetPasswordPage() {
 
   return (
     <AuthCard cardClassName="reset-password-card">
-      <form className="reset-password-form" onSubmit={handleSubmit}>
+      <form className="reset-password-form" onSubmit={handleSubmit} noValidate>
         <h2 className="form-title">Redefinir senha</h2>
         <p className="form-subtitle">
           Digite uma nova senha para continuar usando sua conta.

@@ -1,4 +1,8 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -141,16 +145,14 @@ describe('AuthService', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('should return generic success when forgot password email does not exist', async () => {
+  it('should throw not found when forgot password email does not exist', async () => {
     usersServiceMock.findByEmail.mockResolvedValue(null);
 
     await expect(
       authService.forgotPassword({
         email: 'missing@example.com',
       }),
-    ).resolves.toEqual({
-      message: 'Se o e-mail existir, enviaremos as instrucoes de recuperacao.',
-    });
+    ).rejects.toBeInstanceOf(NotFoundException);
     expect(mailServiceMock.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
 
@@ -162,7 +164,12 @@ describe('AuthService', () => {
     });
     jwtServiceMock.signAsync.mockResolvedValue('reset-token');
 
-    await authService.forgotPassword({ email: 'leo@example.com' });
+    await expect(
+      authService.forgotPassword({ email: 'leo@example.com' }),
+    ).resolves.toEqual({
+      message:
+        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.',
+    });
 
     expect(mailServiceMock.sendPasswordResetEmail).toHaveBeenCalledWith({
       to: 'leo@example.com',

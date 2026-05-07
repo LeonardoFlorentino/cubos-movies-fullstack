@@ -600,7 +600,7 @@ export function MovieDetailsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="space-y-4">
+            <form onSubmit={handleSaveEdit} className="space-y-4" noValidate>
               <div>
                 <label className="mb-1 block text-sm text-slate-300">
                   Título

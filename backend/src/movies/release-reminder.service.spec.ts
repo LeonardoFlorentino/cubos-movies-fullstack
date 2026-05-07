@@ -95,4 +95,33 @@ describe('ReleaseReminderService', () => {
     expect(moviesRepository.save).not.toHaveBeenCalled();
     expect(sentCount).toBe(0);
   });
+
+  it('sends reminders for overdue unsent releases', async () => {
+    const movie = {
+      id: 'movie-3',
+      title: 'Late Reminder',
+      releaseDate: '2026-05-01',
+      releaseReminderSentAt: null,
+      owner: {
+        name: 'Leona',
+        email: 'leona@example.com',
+      },
+    } as Movie;
+
+    moviesRepository.find.mockResolvedValue([movie]);
+    moviesRepository.save.mockResolvedValue(movie);
+
+    const sentCount = await service.sendReleaseRemindersForDate(
+      new Date('2026-05-03T12:00:00.000Z'),
+    );
+
+    expect(mailServiceMock.sendReleaseReminderEmail).toHaveBeenCalledWith({
+      to: 'leona@example.com',
+      userName: 'Leona',
+      movieTitle: 'Late Reminder',
+      releaseDate: '2026-05-01',
+    });
+    expect(moviesRepository.save).toHaveBeenCalledTimes(1);
+    expect(sentCount).toBe(1);
+  });
 });

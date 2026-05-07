@@ -49,7 +49,7 @@ export class MailService {
 
     await this.sendMail({
       to: payload.to,
-      subject: 'Cubos Movies | Recuperacao de senha',
+      subject: 'Cubos Movies | Recuperação de senha',
       text: template.text,
       html: template.html,
     });

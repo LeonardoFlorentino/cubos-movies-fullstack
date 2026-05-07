@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, LessThanOrEqual, Repository } from 'typeorm';
 import { MailService } from '../mail/mail.service';
 import { Movie } from './entities/movie.entity';
 
@@ -15,10 +15,12 @@ export class ReleaseReminderService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  @Cron(CronExpression.EVERY_HOUR, {
+    timeZone: 'America/Sao_Paulo',
+  })
   async handleDailyReleaseReminders(): Promise<void> {
     const sentCount = await this.sendReleaseRemindersForDate(new Date());
-    this.logger.log(`Daily release reminders sent: ${sentCount}`);
+    this.logger.log(`Pending release reminders sent: ${sentCount}`);
   }
 
   async sendReleaseRemindersForDate(referenceDate: Date): Promise<number> {
@@ -26,7 +28,7 @@ export class ReleaseReminderService {
 
     const movies = await this.moviesRepository.find({
       where: {
-        releaseDate: targetDate,
+        releaseDate: LessThanOrEqual(targetDate),
         releaseReminderSentAt: IsNull(),
       },
       relations: {

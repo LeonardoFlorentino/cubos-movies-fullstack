@@ -1,21 +1,21 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.email("Use a valid email address"),
-  password: z.string().min(6, "Password must have at least 6 characters"),
+  email: z.email("Informe um e-mail válido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });
 
 export const registerSchema = z.object({
-  name: z.string().min(2, "Name must have at least 2 characters"),
-  email: z.email("Use a valid email address"),
-  password: z.string().min(6, "Password must have at least 6 characters"),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  email: z.email("Informe um e-mail válido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.email("Use a valid email address"),
+  email: z.email("Informe um e-mail válido."),
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Invalid reset token"),
-  password: z.string().min(6, "Password must have at least 6 characters"),
+  token: z.string().min(1, "O link de redefinição é inválido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });

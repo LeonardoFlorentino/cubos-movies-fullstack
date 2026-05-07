@@ -15,35 +15,41 @@ export const APP_ERROR_CATALOG = {
     code: 'AUTH_EMAIL_ALREADY_IN_USE',
     message: 'Email already in use',
     userMessage:
-      'Este e-mail ja esta cadastrado. Tente entrar ou use outro endereco.',
+      'Este e-mail já está cadastrado. Tente entrar ou use outro endereço.',
+  },
+  AUTH_EMAIL_NOT_FOUND: {
+    code: 'AUTH_EMAIL_NOT_FOUND',
+    message: 'Email not found',
+    userMessage:
+      'Não existe cadastro com este e-mail na plataforma. Verifique o endereço informado.',
   },
   AUTH_UNAUTHORIZED: {
     code: 'AUTH_UNAUTHORIZED',
     message: 'Authentication required',
     userMessage:
-      'Sua sessao expirou ou nao foi reconhecida. Entre novamente para continuar.',
+      'Sua sessão expirou ou não foi reconhecida. Entre novamente para continuar.',
   },
   AUTH_RESET_TOKEN_INVALID: {
     code: 'AUTH_RESET_TOKEN_INVALID',
     message: 'Password reset token is invalid or expired',
     userMessage:
-      'O link de redefinicao e invalido ou expirou. Solicite um novo link para continuar.',
+      'O link de redefinição é inválido ou expirou. Solicite um novo link para continuar.',
   },
   VALIDATION_FAILED: {
     code: 'VALIDATION_FAILED',
     message: 'Validation failed',
     userMessage:
-      'Alguns dados enviados sao invalidos. Revise os campos destacados e tente novamente.',
+      'Alguns dados enviados são inválidos. Revise os campos destacados e tente novamente.',
   },
   RESOURCE_NOT_FOUND: {
     code: 'RESOURCE_NOT_FOUND',
     message: 'Resource not found',
-    userMessage: 'Nao encontramos o recurso solicitado.',
+    userMessage: 'Não encontramos o recurso solicitado.',
   },
   ACCESS_FORBIDDEN: {
     code: 'ACCESS_FORBIDDEN',
     message: 'Access denied',
-    userMessage: 'Voce nao tem permissao para executar esta acao.',
+    userMessage: 'Você não tem permissão para executar esta ação.',
   },
   MOVIE_IMAGE_REQUIRED: {
     code: 'MOVIE_IMAGE_REQUIRED',
@@ -64,7 +70,7 @@ export const APP_ERROR_CATALOG = {
     code: 'STORAGE_UPLOAD_FAILED',
     message: 'Could not upload image',
     userMessage:
-      'Nao foi possivel enviar a imagem agora. Tente novamente em instantes.',
+      'Não foi possível enviar a imagem agora. Tente novamente em instantes.',
   },
   INTERNAL_SERVER_ERROR: {
     code: 'INTERNAL_SERVER_ERROR',

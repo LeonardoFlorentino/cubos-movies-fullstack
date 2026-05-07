@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  NotFoundException,
   UnauthorizedException,
   Injectable,
 } from '@nestjs/common';
@@ -79,10 +80,9 @@ export class AuthService {
     const user = await this.usersService.findByEmail(forgotPasswordDto.email);
 
     if (!user) {
-      return {
-        message:
-          'Se o e-mail existir, enviaremos as instrucoes de recuperacao.',
-      };
+      throw new NotFoundException(
+        getAppErrorDefinition('AUTH_EMAIL_NOT_FOUND'),
+      );
     }
 
     const token = await this.jwtService.signAsync(
@@ -113,7 +113,8 @@ export class AuthService {
     });
 
     return {
-      message: 'Se o e-mail existir, enviaremos as instrucoes de recuperacao.',
+      message:
+        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.',
     };
   }
 

@@ -8,9 +8,6 @@ import { getErrorMessage } from "../../lib/api-error";
 import { forgotPasswordSchema } from "../../lib/auth.schemas";
 import "./forgot-password-page.css";
 
-const SUCCESS_MESSAGE =
-  "Se o e-mail informado existir, voce recebera uma mensagem para redefinir sua senha.";
-
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -22,21 +19,24 @@ export function ForgotPasswordPage() {
 
     const result = forgotPasswordSchema.safeParse({ email });
     if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Invalid form");
+      setError(
+        result.error.issues[0]?.message ?? "Revise os dados informados.",
+      );
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setFeedback(null);
 
     try {
-      await forgotPassword(result.data);
-      setFeedback(SUCCESS_MESSAGE);
+      const response = await forgotPassword(result.data);
+      setFeedback(response.message);
     } catch (requestError) {
       setError(
         getErrorMessage(
           requestError,
-          "Nao foi possivel enviar o e-mail de recuperacao agora.",
+          "Não foi possível enviar o e-mail de recuperação agora.",
         ),
       );
       setFeedback(null);
@@ -47,10 +47,10 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthCard cardClassName="forgot-password-card">
-      <form className="forgot-password-form" onSubmit={handleSubmit}>
+      <form className="forgot-password-form" onSubmit={handleSubmit} noValidate>
         <h2 className="form-title">Esqueci minha senha</h2>
         <p className="form-subtitle">
-          Informe seu e-mail para receber o link de redefinicao.
+          Informe seu e-mail para receber o link de redefinição.
         </p>
 
         <Input

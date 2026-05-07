@@ -12,20 +12,22 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   AUTH_INVALID_CREDENTIALS:
     "E-mail ou senha incorretos. Confira seus dados e tente novamente.",
   AUTH_EMAIL_ALREADY_IN_USE:
-    "Este e-mail ja esta cadastrado. Tente entrar ou use outro endereco.",
+    "Este e-mail já está cadastrado. Tente entrar ou use outro endereço.",
+  AUTH_EMAIL_NOT_FOUND:
+    "Não existe cadastro com este e-mail na plataforma. Verifique o endereço informado.",
   AUTH_UNAUTHORIZED:
-    "Sua sessao expirou ou nao foi reconhecida. Entre novamente para continuar.",
+    "Sua sessão expirou ou não foi reconhecida. Entre novamente para continuar.",
   AUTH_RESET_TOKEN_INVALID:
-    "O link de redefinicao e invalido ou expirou. Solicite um novo link.",
+    "O link de redefinição é inválido ou expirou. Solicite um novo link.",
   VALIDATION_FAILED:
-    "Alguns dados enviados sao invalidos. Revise os campos e tente novamente.",
-  RESOURCE_NOT_FOUND: "Nao encontramos o recurso solicitado.",
-  ACCESS_FORBIDDEN: "Voce nao tem permissao para executar esta acao.",
+    "Alguns dados enviados são inválidos. Revise os campos e tente novamente.",
+  RESOURCE_NOT_FOUND: "Não encontramos o recurso solicitado.",
+  ACCESS_FORBIDDEN: "Você não tem permissão para executar esta ação.",
   MOVIE_IMAGE_REQUIRED: "Selecione uma imagem para continuar com o envio.",
   MOVIE_IMAGE_TYPE_INVALID: "Use uma imagem JPG, JPEG, PNG ou WEBP.",
   MOVIE_IMAGE_TOO_LARGE: "Imagem muito grande. Tamanho máximo: 5MB.",
   STORAGE_UPLOAD_FAILED:
-    "Nao foi possivel enviar a imagem agora. Tente novamente em instantes.",
+    "Não foi possível enviar a imagem agora. Tente novamente em instantes.",
   INTERNAL_SERVER_ERROR:
     "Ocorreu um erro inesperado. Tente novamente em instantes.",
 };

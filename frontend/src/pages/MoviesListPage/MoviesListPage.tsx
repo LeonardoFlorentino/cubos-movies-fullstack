@@ -696,7 +696,7 @@ export function MoviesListPage() {
       {/* modal — adicionar filme */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-700 bg-[#1a1b23] shadow-[0_25px_70px_rgba(3,7,18,0.8)]">
+          <div className="flex max-h-[90vh] w-[80vw] max-w-[1100px] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#1a1b23] shadow-[0_25px_70px_rgba(3,7,18,0.8)]">
             <div className="flex items-center justify-between border-b border-slate-700/80 px-6 py-4">
               <h2 className="text-lg font-semibold text-slate-100">
                 Adicionar Filme
@@ -711,160 +711,297 @@ export function MoviesListPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-4 p-6">
-              {formError && (
-                <p className="rounded-md bg-red-900/30 px-3 py-2 text-sm text-red-300">
-                  {formError}
-                </p>
-              )}
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  Título *
-                </label>
-                <input
-                  name="title"
-                  value={form.title}
-                  onChange={handleFormChange}
-                  required
-                  className={`input-field ${
-                    fieldErrors.title
-                      ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
-                      : ""
-                  }`}
-                  placeholder="Nome do filme"
-                />
-                {fieldErrors.title && (
-                  <p className="mt-1 text-xs text-red-300">
-                    {fieldErrors.title}
+            <form
+              onSubmit={handleAddSubmit}
+              className="flex min-h-0 flex-1 flex-col"
+              noValidate
+            >
+              <div className="space-y-4 overflow-y-auto px-6 py-5 [scrollbar-color:#475569_#0b1220] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-950/90 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-slate-800 [&::-webkit-scrollbar-thumb]:bg-slate-600/70 [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-thumb]:duration-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500/80">
+                {formError && (
+                  <p className="rounded-md bg-red-900/30 px-3 py-2 text-sm text-red-300">
+                    {formError}
                   </p>
                 )}
-              </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  Descrição *
-                </label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleFormChange}
-                  rows={3}
-                  required
-                  className={`w-full resize-none rounded border bg-[rgba(23,23,30,0.88)] px-3.5 py-2.5 text-sm text-[#d3d4e2] placeholder:text-[#747488] focus:outline-none ${
-                    fieldErrors.description
-                      ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
-                      : "border-[rgba(89,90,112,0.56)] focus:border-[#8d67ce] focus:shadow-[inset_0_0_0_1px_#8d67ce]"
-                  }`}
-                  placeholder="Sinopse do filme"
-                />
-                {fieldErrors.description && (
-                  <p className="mt-1 text-xs text-red-300">
-                    {fieldErrors.description}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Data de lançamento *
+                    Título *
                   </label>
                   <input
-                    name="releaseDate"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={
-                      releaseDateInput || formatIsoToBrDate(form.releaseDate)
-                    }
-                    onChange={handleReleaseDateChange}
+                    name="title"
+                    value={form.title}
+                    onChange={handleFormChange}
                     required
                     className={`input-field ${
-                      fieldErrors.releaseDate
+                      fieldErrors.title
                         ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
                         : ""
                     }`}
-                    placeholder="dd/mm/aaaa"
+                    placeholder="Nome do filme"
                   />
-                  {fieldErrors.releaseDate && (
+                  {fieldErrors.title && (
                     <p className="mt-1 text-xs text-red-300">
-                      {fieldErrors.releaseDate}
+                      {fieldErrors.title}
                     </p>
                   )}
                 </div>
 
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Orçamento (US$) *
+                    Descrição *
                   </label>
-                  <input
-                    name="budget"
-                    type="text"
-                    inputMode="numeric"
-                    value={budgetInput}
-                    onChange={handleBudgetChange}
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleFormChange}
+                    rows={3}
                     required
-                    className={`input-field ${
-                      fieldErrors.budget
+                    className={`w-full resize-none rounded border bg-[rgba(23,23,30,0.88)] px-3.5 py-2.5 text-sm text-[#d3d4e2] placeholder:text-[#747488] focus:outline-none ${
+                      fieldErrors.description
                         ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
-                        : ""
+                        : "border-[rgba(89,90,112,0.56)] focus:border-[#8d67ce] focus:shadow-[inset_0_0_0_1px_#8d67ce]"
                     }`}
-                    placeholder="$ 0.00"
+                    placeholder="Sinopse do filme"
                   />
-                  {fieldErrors.budget && (
+                  {fieldErrors.description && (
                     <p className="mt-1 text-xs text-red-300">
-                      {fieldErrors.budget}
+                      {fieldErrors.description}
                     </p>
                   )}
                 </div>
-              </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  Gêneros
-                </label>
-                <select
-                  className="input-field"
-                  value=""
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val && !genresInput.includes(val)) {
-                      setGenresInput((prev) => [...prev, val]);
-                    }
-                  }}
-                >
-                  <option value="" disabled>
-                    Selecione um gênero...
-                  </option>
-                  {GENRE_OPTIONS.filter((g) => !genresInput.includes(g)).map(
-                    (g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ),
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                      Data de lançamento *
+                    </label>
+                    <input
+                      name="releaseDate"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={
+                        releaseDateInput || formatIsoToBrDate(form.releaseDate)
+                      }
+                      onChange={handleReleaseDateChange}
+                      required
+                      className={`input-field ${
+                        fieldErrors.releaseDate
+                          ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
+                          : ""
+                      }`}
+                      placeholder="dd/mm/aaaa"
+                    />
+                    {fieldErrors.releaseDate && (
+                      <p className="mt-1 text-xs text-red-300">
+                        {fieldErrors.releaseDate}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                      Orçamento (US$) *
+                    </label>
+                    <input
+                      name="budget"
+                      type="text"
+                      inputMode="numeric"
+                      value={budgetInput}
+                      onChange={handleBudgetChange}
+                      required
+                      className={`input-field ${
+                        fieldErrors.budget
+                          ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
+                          : ""
+                      }`}
+                      placeholder="$ 0.00"
+                    />
+                    {fieldErrors.budget && (
+                      <p className="mt-1 text-xs text-red-300">
+                        {fieldErrors.budget}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Gêneros
+                  </label>
+                  <select
+                    className="input-field"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !genresInput.includes(val)) {
+                        setGenresInput((prev) => [...prev, val]);
+                      }
+                    }}
+                  >
+                    <option value="" disabled>
+                      Selecione um gênero...
+                    </option>
+                    {GENRE_OPTIONS.filter((g) => !genresInput.includes(g)).map(
+                      (g) => (
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                  {genresInput.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {genresInput.map((genre) => (
+                        <span
+                          key={genre}
+                          className="inline-flex items-center gap-1 rounded-full bg-violet-600/20 px-2.5 py-1 text-xs font-medium text-violet-300 ring-1 ring-violet-500/40"
+                        >
+                          {genre}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setGenresInput((prev) =>
+                                prev.filter((g) => g !== genre),
+                              )
+                            }
+                            className="ml-0.5 rounded-full p-0.5 hover:bg-violet-500/30"
+                            aria-label={`Remover ${genre}`}
+                          >
+                            <svg
+                              className="h-3 w-3"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
                   )}
-                </select>
-                {genresInput.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {genresInput.map((genre) => (
-                      <span
-                        key={genre}
-                        className="inline-flex items-center gap-1 rounded-full bg-violet-600/20 px-2.5 py-1 text-xs font-medium text-violet-300 ring-1 ring-violet-500/40"
-                      >
-                        {genre}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                      Duração (min)
+                    </label>
+                    <input
+                      name="durationMinutes"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={durationInput}
+                      onChange={(e) => {
+                        setDurationInput(e.target.value);
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          durationMinutes: undefined,
+                        }));
+                      }}
+                      className={`input-field ${
+                        fieldErrors.durationMinutes
+                          ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
+                          : ""
+                      }`}
+                      placeholder="169"
+                    />
+                    {fieldErrors.durationMinutes && (
+                      <p className="mt-1 text-xs text-red-300">
+                        {fieldErrors.durationMinutes}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Imagem do filme
+                  </label>
+                  <label
+                    className={`group relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                      isUploadingImage
+                        ? "cursor-not-allowed border-slate-700 bg-slate-800/60 text-slate-500"
+                        : "border-violet-500/60 bg-violet-600/10 text-violet-300 hover:border-violet-400 hover:bg-violet-600/25 hover:text-violet-200 active:scale-[0.98]"
+                    }`}
+                  >
+                    {isUploadingImage ? (
+                      <>
+                        <svg
+                          className="h-4 w-4 animate-spin"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4"
+                          />
+                        </svg>
+                        Carregar imagem
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                    />
+                  </label>
+
+                  {form.imageUrl?.trim() && (
+                    <div className="mt-3 overflow-hidden rounded-lg border border-slate-700 bg-slate-800/70 p-2">
+                      <div className="relative overflow-hidden rounded-md">
+                        <img
+                          src={form.imageUrl}
+                          alt="Preview da imagem do filme"
+                          className="h-44 w-full object-cover"
+                        />
                         <button
                           type="button"
-                          onClick={() =>
-                            setGenresInput((prev) =>
-                              prev.filter((g) => g !== genre),
-                            )
-                          }
-                          className="ml-0.5 rounded-full p-0.5 hover:bg-violet-500/30"
-                          aria-label={`Remover ${genre}`}
+                          onClick={() => {
+                            setForm((prev) => ({ ...prev, imageUrl: "" }));
+                            setHasUploadedImage(false);
+                          }}
+                          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-black/80"
+                          aria-label="Descartar imagem"
+                          title="Descartar imagem"
                         >
                           <svg
-                            className="h-3 w-3"
+                            className="h-4 w-4"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2.5"
@@ -877,172 +1014,41 @@ export function MoviesListPage() {
                             />
                           </svg>
                         </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </div>
+                      {hasUploadedImage && (
+                        <p className="mt-2 text-xs text-slate-300">
+                          Imagem carregada.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Duração (min)
+                    Trailer (URL do YouTube)
                   </label>
                   <input
-                    name="durationMinutes"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={durationInput}
-                    onChange={(e) => {
-                      setDurationInput(e.target.value);
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        durationMinutes: undefined,
-                      }));
-                    }}
+                    name="trailer"
+                    type="url"
+                    value={form.trailer ?? ""}
+                    onChange={handleFormChange}
                     className={`input-field ${
-                      fieldErrors.durationMinutes
+                      fieldErrors.trailer
                         ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
                         : ""
                     }`}
-                    placeholder="169"
+                    placeholder="https://www.youtube.com/watch?v=..."
                   />
-                  {fieldErrors.durationMinutes && (
+                  {fieldErrors.trailer && (
                     <p className="mt-1 text-xs text-red-300">
-                      {fieldErrors.durationMinutes}
+                      {fieldErrors.trailer}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  Imagem do filme
-                </label>
-                <label
-                  className={`group relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
-                    isUploadingImage
-                      ? "cursor-not-allowed border-slate-700 bg-slate-800/60 text-slate-500"
-                      : "border-violet-500/60 bg-violet-600/10 text-violet-300 hover:border-violet-400 hover:bg-violet-600/25 hover:text-violet-200 active:scale-[0.98]"
-                  }`}
-                >
-                  {isUploadingImage ? (
-                    <>
-                      <svg
-                        className="h-4 w-4 animate-spin"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8z"
-                        />
-                      </svg>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4"
-                        />
-                      </svg>
-                      Carregar imagem
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={isUploadingImage}
-                  />
-                </label>
-
-                {form.imageUrl?.trim() && (
-                  <div className="mt-3 overflow-hidden rounded-lg border border-slate-700 bg-slate-800/70 p-2">
-                    <div className="relative overflow-hidden rounded-md">
-                      <img
-                        src={form.imageUrl}
-                        alt="Preview da imagem do filme"
-                        className="h-44 w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setForm((prev) => ({ ...prev, imageUrl: "" }));
-                          setHasUploadedImage(false);
-                        }}
-                        className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-black/80"
-                        aria-label="Descartar imagem"
-                        title="Descartar imagem"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    {hasUploadedImage && (
-                      <p className="mt-2 text-xs text-slate-300">
-                        Imagem carregada.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                  Trailer (URL do YouTube)
-                </label>
-                <input
-                  name="trailer"
-                  type="url"
-                  value={form.trailer ?? ""}
-                  onChange={handleFormChange}
-                  className={`input-field ${
-                    fieldErrors.trailer
-                      ? "border-red-500 focus:border-red-400 focus:shadow-[inset_0_0_0_1px_#f87171]"
-                      : ""
-                  }`}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
-                {fieldErrors.trailer && (
-                  <p className="mt-1 text-xs text-red-300">
-                    {fieldErrors.trailer}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 border-t border-slate-700/80 px-6 py-4">
                 <button
                   type="button"
                   onClick={() => setAddOpen(false)}
