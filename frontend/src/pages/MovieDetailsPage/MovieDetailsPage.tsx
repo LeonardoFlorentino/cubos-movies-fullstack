@@ -18,6 +18,39 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
+function parseBrDateToIso(brDate: string) {
+  const digits = brDate.replace(/\D/g, "").slice(0, 8);
+  const day = digits.slice(0, 2);
+  const month = digits.slice(2, 4);
+  const year = digits.slice(4, 8);
+  if (digits.length < 8) {
+    return {
+      masked: [day, month, year].filter(Boolean).join("/"),
+      iso: "",
+      isValid: false,
+    };
+  }
+  const iso = `${year}-${month}-${day}`;
+  const date = new Date(`${iso}T00:00:00`);
+  const isValid =
+    !Number.isNaN(date.getTime()) &&
+    date.getUTCDate() === Number(day) &&
+    date.getUTCMonth() + 1 === Number(month) &&
+    date.getUTCFullYear() === Number(year);
+  return {
+    masked: `${day}/${month}/${year}`,
+    iso: isValid ? iso : "",
+    isValid,
+  };
+}
+
+function isoToBrDate(iso: string) {
+  if (!iso) return "";
+  const [year, month, day] = iso.split("-");
+  if (!year || !month || !day) return iso;
+  return `${day}/${month}/${year}`;
+}
+
 function runtimeFromDescriptionOrBudget(description: string, budget: string) {
   const explicit = description.match(/(\d{2,3})\s?(min|mins|minutes|minutos)/i);
   if (explicit) {
@@ -106,6 +139,23 @@ function getYoutubeEmbedUrl(url: string | null) {
   return null;
 }
 
+const GENRE_OPTIONS = [
+  "Ação",
+  "Animação",
+  "Aventura",
+  "Comédia",
+  "Documentário",
+  "Drama",
+  "Fantasia",
+  "Ficção Científica",
+  "Horror",
+  "Musical",
+  "Romance",
+  "Suspense",
+  "Thriller",
+  "Western",
+];
+
 export function MovieDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -116,6 +166,8 @@ export function MovieDetailsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isUploadingEditImage, setIsUploadingEditImage] = useState(false);
+  const [editGenres, setEditGenres] = useState<string[]>([]);
+  const [releaseDateInput, setReleaseDateInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -171,7 +223,7 @@ export function MovieDetailsPage() {
       description: currentMovie.description,
       releaseDate: currentMovie.releaseDate,
       budget: Number(currentMovie.budget || 0).toFixed(2),
-      genres: (currentMovie.genres ?? []).join(", "),
+      genres: "",
       durationMinutes:
         typeof currentMovie.durationMinutes === "number"
           ? String(currentMovie.durationMinutes)
@@ -179,8 +231,18 @@ export function MovieDetailsPage() {
       imageUrl: currentMovie.imageUrl ?? "",
       trailer: currentMovie.trailer ?? "",
     });
+    setEditGenres([...(currentMovie.genres ?? [])]);
+    setReleaseDateInput(isoToBrDate(currentMovie.releaseDate));
     setIsUploadingEditImage(false);
     setIsEditOpen(true);
+  };
+
+  const handleEditReleaseDateChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const parsed = parseBrDateToIso(e.target.value);
+    setReleaseDateInput(parsed.masked);
+    setEditForm((prev) => ({ ...prev, releaseDate: parsed.iso }));
   };
 
   const handleEditChange = (
@@ -235,10 +297,6 @@ export function MovieDetailsPage() {
 
     setIsSavingEdit(true);
     try {
-      const parsedGenres = editForm.genres
-        .split(",")
-        .map((genre) => genre.trim())
-        .filter((genre) => genre.length > 0);
       const parsedDuration = editForm.durationMinutes.trim()
         ? Number.parseInt(editForm.durationMinutes, 10)
         : undefined;
@@ -248,7 +306,7 @@ export function MovieDetailsPage() {
         description: editForm.description.trim(),
         releaseDate: editForm.releaseDate,
         budget: Number.parseFloat(editForm.budget),
-        genres: parsedGenres.length > 0 ? parsedGenres : undefined,
+        genres: editGenres.length > 0 ? editGenres : undefined,
         durationMinutes:
           parsedDuration && parsedDuration > 0 ? parsedDuration : undefined,
         imageUrl: editForm.imageUrl.trim() || undefined,
@@ -585,10 +643,13 @@ export function MovieDetailsPage() {
                   </label>
                   <input
                     name="releaseDate"
-                    type="date"
-                    value={editForm.releaseDate}
-                    onChange={handleEditChange}
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none dark:text-slate-100"
+                    type="text"
+                    inputMode="numeric"
+                    value={releaseDateInput}
+                    onChange={handleEditReleaseDateChange}
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -607,20 +668,70 @@ export function MovieDetailsPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="mb-1 block text-sm text-slate-300">
+                  Gêneros
+                </label>
+                <select
+                  className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && !editGenres.includes(val)) {
+                      setEditGenres((prev) => [...prev, val]);
+                    }
+                  }}
+                >
+                  <option value="" disabled>
+                    Selecione um gênero...
+                  </option>
+                  {GENRE_OPTIONS.filter((g) => !editGenres.includes(g)).map(
+                    (g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ),
+                  )}
+                </select>
+                {editGenres.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {editGenres.map((genre) => (
+                      <span
+                        key={genre}
+                        className="inline-flex items-center gap-1 rounded-full bg-violet-600/20 px-2.5 py-1 text-xs font-medium text-violet-300 ring-1 ring-violet-500/40"
+                      >
+                        {genre}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditGenres((prev) =>
+                              prev.filter((g) => g !== genre),
+                            )
+                          }
+                          className="ml-0.5 rounded-full p-0.5 hover:bg-violet-500/30"
+                          aria-label={`Remover ${genre}`}
+                        >
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-sm text-slate-300">
-                    Gêneros
-                  </label>
-                  <input
-                    name="genres"
-                    type="text"
-                    value={editForm.genres}
-                    onChange={handleEditChange}
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
-                    placeholder="Aventura, Drama, Sci-Fi"
-                  />
-                </div>
                 <div>
                   <label className="mb-1 block text-sm text-slate-300">
                     Duração (min)
@@ -639,18 +750,56 @@ export function MovieDetailsPage() {
 
               <div>
                 <label className="mb-1 block text-sm text-slate-300">
-                  URL da imagem
+                  Imagem do filme
                 </label>
-                <input
-                  name="imageUrl"
-                  type="url"
-                  value={editForm.imageUrl}
-                  onChange={handleEditChange}
-                  className="h-11 w-full rounded-md border border-slate-600 bg-slate-900/70 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
-                  placeholder="https://..."
-                />
-                <label className="mt-2 inline-flex cursor-pointer rounded-md border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/60">
-                  {isUploadingEditImage ? "Enviando..." : "Upload imagem"}
+                <label
+                  className={`group relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                    isUploadingEditImage
+                      ? "cursor-not-allowed border-slate-700 bg-slate-800/60 text-slate-500"
+                      : "border-violet-500/60 bg-violet-600/10 text-violet-300 hover:border-violet-400 hover:bg-violet-600/25 hover:text-violet-200 active:scale-[0.98]"
+                  }`}
+                >
+                  {isUploadingEditImage ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4"
+                        />
+                      </svg>
+                      Upload de imagem
+                    </>
+                  )}
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
@@ -659,6 +808,11 @@ export function MovieDetailsPage() {
                     disabled={isUploadingEditImage}
                   />
                 </label>
+                {editForm.imageUrl && (
+                  <p className="mt-1.5 truncate text-xs text-slate-500">
+                    {editForm.imageUrl}
+                  </p>
+                )}
               </div>
 
               <div>

@@ -16,6 +16,24 @@ import {
   formatMegabytes,
 } from "../../lib/image-compression";
 
+// ─── genre options ──────────────────────────────────────────────────────────
+const GENRE_OPTIONS = [
+  "Ação",
+  "Animação",
+  "Aventura",
+  "Comédia",
+  "Documentário",
+  "Drama",
+  "Fantasia",
+  "Ficção Científica",
+  "Horror",
+  "Musical",
+  "Romance",
+  "Suspense",
+  "Thriller",
+  "Western",
+];
+
 // ─── filter types ────────────────────────────────────────────────────────────
 type DurationFilter = "all" | "short" | "medium" | "long";
 type PeriodFilter = "all" | "last-30" | "last-365" | "year-to-date" | "custom";
@@ -163,7 +181,7 @@ export function MoviesListPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [releaseDateInput, setReleaseDateInput] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
-  const [genresInput, setGenresInput] = useState("");
+  const [genresInput, setGenresInput] = useState<string[]>([]);
   const [durationInput, setDurationInput] = useState("");
 
   // delete confirmation
@@ -296,7 +314,7 @@ export function MoviesListPage() {
     setForm(defaultForm);
     setReleaseDateInput("");
     setBudgetInput("");
-    setGenresInput("");
+    setGenresInput([]);
     setDurationInput("");
     setFormError("");
     setFieldErrors({});
@@ -431,15 +449,10 @@ export function MoviesListPage() {
 
     setFieldErrors({});
 
-    const parsedGenres = genresInput
-      .split(",")
-      .map((genre) => normalizeGenre(genre))
-      .filter((genre) => genre.length > 0);
-
     setIsSubmitting(true);
     const created = await createMovieAction({
       ...form,
-      genres: parsedGenres.length > 0 ? parsedGenres : undefined,
+      genres: genresInput.length > 0 ? genresInput : undefined,
       durationMinutes: parsedDuration,
       imageUrl: form.imageUrl?.trim() || undefined,
       trailer: form.trailer?.trim() || undefined,
@@ -815,23 +828,70 @@ export function MoviesListPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Gêneros
-                  </label>
-                  <input
-                    type="text"
-                    value={genresInput}
-                    onChange={(e) => setGenresInput(e.target.value)}
-                    className="input-field"
-                    placeholder="Aventura, Drama, Sci-Fi"
-                  />
-                  <p className="mt-1 text-xs text-slate-500">
-                    Separe os gêneros por vírgula.
-                  </p>
-                </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                  Gêneros
+                </label>
+                <select
+                  className="input-field"
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && !genresInput.includes(val)) {
+                      setGenresInput((prev) => [...prev, val]);
+                    }
+                  }}
+                >
+                  <option value="" disabled>
+                    Selecione um gênero...
+                  </option>
+                  {GENRE_OPTIONS.filter((g) => !genresInput.includes(g)).map(
+                    (g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ),
+                  )}
+                </select>
+                {genresInput.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {genresInput.map((genre) => (
+                      <span
+                        key={genre}
+                        className="inline-flex items-center gap-1 rounded-full bg-violet-600/20 px-2.5 py-1 text-xs font-medium text-violet-300 ring-1 ring-violet-500/40"
+                      >
+                        {genre}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGenresInput((prev) =>
+                              prev.filter((g) => g !== genre),
+                            )
+                          }
+                          className="ml-0.5 rounded-full p-0.5 hover:bg-violet-500/30"
+                          aria-label={`Remover ${genre}`}
+                        >
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">
                     Duração (min)
