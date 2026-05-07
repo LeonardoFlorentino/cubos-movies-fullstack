@@ -5,18 +5,22 @@ import { MovieDetailsPage } from "./pages/MovieDetailsPage/MovieDetailsPage";
 import { NotFoundPage } from "./pages/NotFoundPage/NotFoundPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 import { MoviesListPage } from "./pages/MoviesListPage/MoviesListPage";
+import { useThemeStore } from "./store/theme.store";
 
 function App() {
+  const { theme } = useThemeStore();
+
   return (
     <main>
       <Toaster
+        key={theme}
         position="top-right"
         richColors
         toastOptions={{
           style: {
-            background: "#1a1b23",
-            border: "1px solid rgba(96, 97, 120, 0.45)",
-            color: "#f4f4fb",
+            background: "var(--toast-bg)",
+            border: "1px solid var(--toast-border)",
+            color: "var(--toast-text)",
           },
         }}
       />

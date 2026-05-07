@@ -6,7 +6,7 @@
 }
 
 .error-code {
-  @apply m-0 text-[22px] font-bold text-[#b5b7ca];
+  @apply m-0 text-[22px] font-bold text-(--text-placeholder);
 }
 
 .not-found-title {

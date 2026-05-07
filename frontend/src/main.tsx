@@ -4,8 +4,10 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import { applyRadixTheme } from "./theme/radix-theme";
+import { useThemeStore } from "./store/theme.store";
 
 applyRadixTheme();
+useThemeStore.getState().initializeTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

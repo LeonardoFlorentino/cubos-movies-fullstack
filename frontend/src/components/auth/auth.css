@@ -7,7 +7,7 @@
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
   isolation: isolate;
-  background: #05060c;
+  background: var(--bg-base);
 }
 
 /* Camadas de Background */
@@ -25,6 +25,10 @@
   overflow: hidden;
 }
 
+[data-theme="light"] .auth-bg-image {
+  height: 58vh;
+}
+
 .auth-bg-image::before {
   content: "";
   position: absolute;
@@ -39,8 +43,64 @@
   pointer-events: none;
 }
 
+[data-theme="light"] .auth-bg-image::after {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -56px;
+  height: 40vh;
+  background:
+    radial-gradient(
+      85% 70% at 50% 0%,
+      rgba(255, 252, 246, 0.16) 0%,
+      rgba(245, 240, 231, 0.62) 58%,
+      rgba(245, 240, 231, 0.96) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(245, 240, 231, 0.08) 0%,
+      rgba(245, 240, 231, 0.92) 100%
+    );
+  filter: blur(18px);
+  pointer-events: none;
+}
+
 .auth-bg-gradient {
   z-index: -20;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 252, 245, 0.96) 0px,
+      rgba(255, 252, 245, 0.9) 56px,
+      rgba(255, 252, 245, 0.7) 92px,
+      rgba(255, 252, 245, 0.4) 148px,
+      rgba(255, 252, 245, 0.16) 220px,
+      rgba(255, 252, 245, 0) 300px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(246, 240, 231, 0.1) 30vh,
+      rgba(246, 240, 231, 0.22) 38vh,
+      rgba(246, 240, 231, 0.74) 50vh,
+      #f5f0e7 72vh,
+      #f5f0e7 100%
+    );
+
+  backdrop-filter: saturate(15%);
+}
+
+.auth-bg-radial {
+  z-index: -10;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(161, 137, 214, 0.08) 0%,
+    rgba(161, 137, 214, 0.2) 44%,
+    rgba(214, 202, 183, 0.48) 100%
+  );
+}
+
+[data-theme="dark"] .auth-bg-gradient {
   background:
     linear-gradient(
       180deg,
@@ -59,12 +119,9 @@
       #05060c 68vh,
       #05060c 100%
     );
-
-  backdrop-filter: saturate(15%);
 }
 
-.auth-bg-radial {
-  z-index: -10;
+[data-theme="dark"] .auth-bg-radial {
   background: radial-gradient(
     circle at 50% 40%,
     rgba(7, 7, 17, 0.2) 0%,
@@ -87,6 +144,10 @@
   border: 1px solid var(--card-border);
   background: var(--card-bg);
   padding: 1rem; /* p-4 */
+  box-shadow: 0 24px 48px rgba(58, 44, 94, 0.18);
+}
+
+[data-theme="dark"] .auth-card {
   box-shadow: 0 24px 48px rgba(2, 2, 8, 0.48);
 }
 

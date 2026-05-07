@@ -2,8 +2,10 @@
 import { useNavigate } from "react-router-dom";
 import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
+import { useThemeStore } from "../../store/theme.store";
 import { AuthHeader } from "../../components/auth/AuthHeader";
 import filterPropertiesGraphic from "../../assets/filter-properties.svg";
+import filterPropertiesGraphicLight from "../../assets/filter-properties-light.svg";
 import type { CreateMoviePayload } from "../../types/movies";
 import { toast } from "sonner";
 import { uploadMovieImage } from "../../lib/api";
@@ -138,6 +140,7 @@ export function MoviesListPage() {
   } = useMoviesStore();
 
   const { token } = useAuthStore();
+  const { theme } = useThemeStore();
   const navigate = useNavigate();
 
   const [searchInput, setSearchInput] = useState("");
@@ -1061,7 +1064,11 @@ export function MoviesListPage() {
                   Propriedades do filtro
                 </p>
                 <img
-                  src={filterPropertiesGraphic}
+                  src={
+                    theme === "light"
+                      ? filterPropertiesGraphicLight
+                      : filterPropertiesGraphic
+                  }
                   alt="Painel visual com propriedades dos filtros"
                   className="h-auto w-full rounded-md border border-slate-700/80"
                 />

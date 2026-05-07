@@ -11,7 +11,7 @@
 }
 
 .error-message {
-  @apply m-0 rounded border border-[#d16f7e] bg-[rgba(75,24,36,0.45)] px-2.5 py-2 text-sm text-(--danger);
+  @apply m-0 rounded border border-[rgba(187,47,73,0.46)] bg-[rgba(187,47,73,0.12)] px-2.5 py-2 text-sm text-(--danger);
 }
 
 .actions-wrapper {

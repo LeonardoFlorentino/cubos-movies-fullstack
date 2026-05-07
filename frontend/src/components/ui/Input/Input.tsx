@@ -8,7 +8,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 export function Input({ label, className, ...props }: InputProps) {
   return (
     <label className="grid gap-2">
-      <span className="text-xs font-bold text-[#f0f0f7]">{label}</span>
+      <span className="text-xs font-bold text-(--text-primary)">{label}</span>
       <input {...props} className={clsx("input-field", className)} />
     </label>
   );
