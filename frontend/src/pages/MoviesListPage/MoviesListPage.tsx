@@ -1,5 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../components/auth/auth.css";
+import "./movies-list-page.css";
 import { useMoviesStore } from "../../store/movies.store";
 import { useAuthStore } from "../../store/auth.store";
 import { useThemeStore } from "../../store/theme.store";
@@ -483,7 +485,11 @@ export function MoviesListPage() {
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen flex-col bg-[#070711]">
+    <div className="movies-list-page flex min-h-screen flex-col">
+      <div className="auth-bg-base auth-bg-image" />
+      <div className="auth-bg-base auth-bg-gradient" />
+      <div className="auth-bg-base auth-bg-radial" />
+
       <AuthHeader />
 
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-8">
