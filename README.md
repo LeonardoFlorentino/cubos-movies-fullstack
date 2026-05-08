@@ -1,151 +1,177 @@
 # Cubos Movies Fullstack
 
-Monorepo base para o desafio Fullstack da Cubos Tecnologia.
+Aplicação fullstack para autenticação de usuários e gerenciamento de filmes.
 
-## Objetivo
+## Visão geral
 
-Construir uma aplicacao de gerenciamento de filmes com:
+Este repositório está organizado em monorepo com dois apps principais:
 
-- Backend em NestJS (TypeScript)
-- Frontend em React + Vite (TypeScript)
-- Banco de dados PostgreSQL via Docker Compose
+- Backend em NestJS + TypeScript + TypeORM
+- Frontend em React + TypeScript + Vite
+
+Infra de desenvolvimento local:
+
+- PostgreSQL via Docker Compose
+
+## Tecnologias utilizadas
+
+| Camada            | Tecnologias                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| Backend           | NestJS, TypeScript, TypeORM, class-validator, JWT, Passport, Nodemailer, AWS SDK S3 |
+| Frontend          | React 19, TypeScript, Vite 8, Zustand, Zod, React Router, Sonner                    |
+| Banco             | PostgreSQL 16                                                                       |
+| Infra e qualidade | Docker Compose, ESLint, Jest, Vitest, TypeScript (`tsc --noEmit`)                   |
 
 ## Estrutura do projeto
 
 ```text
 .
-|-- backend/        # API NestJS
-|-- frontend/       # App React
-|-- .github/
-|   `-- workflows/
-|       `-- ci.yml  # Pipeline de lint e testes
+|-- backend/
+|   |-- src/
+|   |   |-- auth/
+|   |   |-- movies/
+|   |   |-- mail/
+|   |   |-- database/
+|   |   `-- common/
+|   `-- test/
+|-- frontend/
+|   `-- src/
+|       |-- components/
+|       |-- lib/
+|       |-- pages/
+|       |-- store/
+|       `-- types/
 |-- docker-compose.yml
+|-- package.json
 `-- README.md
 ```
 
-## Requisitos
+## READMEs específicos
 
-- Node.js 20+
-- npm 10+
-- Docker + Docker Compose
+- Backend (detalhes técnicos da API): [backend/README.md](backend/README.md)
+- Frontend (detalhes técnicos da SPA): [frontend/README.md](frontend/README.md)
 
-## Primeiros passos
+## Funcionalidades implementadas
 
-1. Instalar dependencias dos projetos
+- Registro, login e perfil autenticado com JWT.
+- Fluxo completo de recuperação de senha por e-mail.
+- CRUD de filmes com upload de imagem.
+- Paginação, busca e filtros na listagem.
+- Lembrete automático de estreia por e-mail.
+- Tema claro/escuro e melhorias de UX em autenticação e listagem.
+
+## Modificações em relação ao escopo base
+
+As alterações abaixo foram implementadas para melhorar usabilidade e robustez sem quebrar os requisitos centrais do desafio.
+
+| Modificação                                       | Justificativa funcional                | Justificativa técnica                                                                                                                                                                          |
+| ------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Link “Criar conta” na tela de login               | Reduz fricção para novos usuários      | Evita dead-end de navegação e melhora descoberta da rota de cadastro já suportada pela API                                                                                                     |
+| Ícone de olho em campos de senha                  | Melhora conferência de senha digitada  | Reduz erros de digitação e tentativas de login inválidas sem alterar validação de segurança                                                                                                    |
+| Tela de “Esqueci minha senha” com envio de e-mail | Permite autoatendimento de recuperação | Fluxo com token JWT de reset, expiração configurável e resposta genérica para evitar enumeração de usuários                                                                                    |
+| Ano + duração + gênero no card de filme           | Acelera decisão do usuário na listagem | Reaproveita dados já carregados do modelo (`releaseDate`, `durationMinutes`, `genres`) sem novas requisições                                                                                   |
+| Botões com cantos mais arredondados               | Torna a interface mais amigável        | Ajuste de `border-radius` em ações primárias/secundárias para aumentar affordance visual, reduzir percepção de rigidez e manter consistência com um design system de linguagem mais acolhedora |
+
+## Requisitos de ambiente
+
+- Node.js >= 20
+- npm >= 10
+- Docker e Docker Compose
+
+## Como executar localmente
+
+### 1) Instalar dependências
 
 ```bash
-cd backend && npm install
-cd ../frontend && npm install
-cd ..
+npm run install:all
 ```
 
-1.1 Configurar variaveis de ambiente do backend
+### 2) Configurar ambiente do backend
+
+Linux/macOS:
 
 ```bash
-cd backend
-cp .env.example .env
-cd ..
+cp backend/.env.example backend/.env
 ```
 
-2. Subir o PostgreSQL
+Windows PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+### 3) Subir PostgreSQL
 
 ```bash
 docker compose up -d
 ```
 
-3. Rodar backend e frontend em terminais separados
+### 4) Subir aplicações
+
+Em terminais separados:
 
 ```bash
-# terminal 1
+# backend
 cd backend
 npm run start:dev
 
-# terminal 2
+# frontend
 cd frontend
 npm run dev
 ```
 
-## Comandos principais
+URLs padrão:
 
-### Backend
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
+
+## Scripts úteis
+
+Na raiz:
+
+```bash
+npm run install:all
+npm run dev:backend
+npm run dev:frontend
+npm run build
+npm run lint
+npm run test
+```
+
+Validação técnica recomendada antes da entrega:
 
 ```bash
 cd backend
 npm run lint:check
 npm run test:ci
-```
+npx tsc --noEmit
 
-### Frontend
-
-```bash
-cd frontend
+cd ../frontend
 npm run lint
 npm run test
+npx tsc --noEmit
 ```
 
-## Funcionalidades recentes
+## API (resumo)
 
-### Lembrete de estreia por e-mail
+Auth:
 
-- Filmes com data de lancamento futura recebem lembrete automaticamente na data de estreia.
-- O backend executa o job diario e envia apenas uma vez por filme (com controle por `release_reminder_sent_at`).
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `GET /auth/me` (Bearer Token)
 
-### Esqueci minha senha
+Movies (rotas autenticadas):
 
-- Endpoint para solicitar recuperacao: `POST /auth/forgot-password`
-- Endpoint para redefinir senha: `POST /auth/reset-password`
-- Frontend com telas dedicadas em `/forgot-password` e `/reset-password`
+- `POST /movies/upload`
+- `POST /movies`
+- `GET /movies?page=1&limit=10&search=...&genre=...`
+- `GET /movies/:id`
+- `PATCH /movies/:id`
+- `DELETE /movies/:id`
 
-## Variaveis de ambiente (backend)
+## Observações de entrega
 
-Confira `backend/.env.example` e configure principalmente:
-
-- `FRONTEND_URL`
-- `JWT_RESET_SECRET`
-- `JWT_RESET_EXPIRES_IN`
-- `RESEND_API_KEY`
-- `MAIL_FROM`
-
-## CI (GitHub Actions)
-
-O workflow em `.github/workflows/ci.yml` executa em push e pull request:
-
-- Backend: install, lint, type-check e testes
-- Frontend: install, lint, type-check e testes
-
-## Troubleshooting do backend
-
-Se o backend encerrar com codigo 1 ao iniciar, valide na ordem abaixo:
-
-1. Banco ativo no Docker (`docker compose up -d`)
-2. Variaveis do backend em `backend/.env`
-3. Porta da API livre (`3000` por padrao)
-
-Para verificar conflito de porta no Windows:
-
-```powershell
-Get-NetTCPConnection -LocalPort 3000
-```
-
-Se houver processo ocupando a porta, encerre-o ou inicie o backend com outra porta:
-
-```powershell
-$env:PORT=3001
-cd backend
-npm run start:dev
-```
-
-## Banco de dados (Docker)
-
-`docker-compose.yml` sobe um PostgreSQL com:
-
-- Host: `localhost`
-- Porta: `5432`
-- Database: `cubos_movies`
-- User: `cubos`
-- Password: `cubos`
-
-## Proximas etapas
-
-- Fase 2: Setup completo da camada de persistencia no backend (ORM + models + migrations)
-- Fase 3: Design system e fluxo de autenticacao no frontend
+- O projeto está versionado em repositório Git e contém documentação de execução e validação.
+- As modificações funcionais adicionais estão justificadas técnica e funcionalmente neste documento.

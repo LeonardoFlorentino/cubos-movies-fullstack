@@ -1,73 +1,161 @@
-# React + TypeScript + Vite
+# Frontend - Cubos Movies Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação SPA responsável por autenticação de usuário, listagem de filmes, detalhes, criação/edição e fluxos de recuperação de senha.
 
-Currently, two official plugins are available:
+## Stack técnica
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite 8
+- Estado global: Zustand
+- Validação de payload/formulários: Zod
+- Roteamento: React Router
+- Notificações: Sonner
+- Qualidade: ESLint + Vitest + TypeScript (`tsc --noEmit`)
 
-## React Compiler
+## Organização de código
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/pages`: páginas de rota (login, cadastro, lista, detalhe, forgot/reset password, not found).
+- `src/components`: componentes reutilizáveis de UI e autenticação.
+- `src/store`: stores globais (`auth`, `movies`, `theme`).
+- `src/lib`: cliente HTTP, schemas e utilitários.
+- `src/types`: contratos tipados da aplicação.
 
-## Expanding the ESLint configuration
+## Rotas principais
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `/login`
+- `/register`
+- `/forgot-password`
+- `/reset-password`
+- `/movies`
+- `/movies/:id`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tecnologias e responsabilidades
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Tecnologia   | Responsabilidade                                                |
+| ------------ | --------------------------------------------------------------- |
+| React        | Estrutura declarativa de UI e composição de páginas/componentes |
+| React Router | Navegação client-side e proteção de rotas                       |
+| Zustand      | Estado global de sessão, filmes e tema                          |
+| Zod          | Validação de formulários e payloads no cliente                  |
+| Vite         | Build e servidor de desenvolvimento com HMR                     |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## UML - visão estrutural (componentes e estado)
+
+```mermaid
+classDiagram
+class AppRouter
+class AuthStore {
+  +token
+  +user
+  +login()
+  +logout()
+}
+class MoviesStore {
+  +movies
+  +page
+  +totalPages
+  +getMoviesAction()
+  +createMovieAction()
+  +updateMovieAction()
+  +deleteMovieAction()
+}
+class ThemeStore {
+  +theme
+  +toggleTheme()
+}
+class ApiClient {
+  +login()
+  +register()
+  +forgotPassword()
+  +resetPassword()
+  +getMovies()
+}
+class LoginPage
+class MoviesListPage
+class MovieDetailsPage
+
+AppRouter --> LoginPage
+AppRouter --> MoviesListPage
+AppRouter --> MovieDetailsPage
+LoginPage --> AuthStore
+MoviesListPage --> MoviesStore
+MovieDetailsPage --> MoviesStore
+MoviesStore --> ApiClient
+AuthStore --> ApiClient
+ThemeStore --> AppRouter
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## UML - sequência do fluxo de login e listagem
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```mermaid
+sequenceDiagram
+participant U as Usuário
+participant LP as LoginPage
+participant AS as AuthStore
+participant API as ApiClient
+participant ML as MoviesListPage
+participant MS as MoviesStore
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+U->>LP: Preenche e envia login
+LP->>AS: login(email, senha)
+AS->>API: POST /auth/login
+API-->>AS: token + dados do usuário
+AS-->>LP: estado autenticado
+LP->>ML: navegação para /movies
+ML->>MS: getMoviesAction(page, limit, search, genre)
+MS->>API: GET /movies
+API-->>MS: lista paginada
+MS-->>ML: renderização de cards
 ```
+
+## Como executar
+
+### Pré-requisitos
+
+- Node.js >= 20
+- npm >= 10
+- Backend da API rodando (padrão: `http://localhost:3000`)
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Desenvolvimento
+
+```bash
+npm run dev
+```
+
+### Build e preview
+
+```bash
+npm run build
+npm run preview
+```
+
+## Scripts úteis
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run test
+npm run test:watch
+npx tsc --noEmit
+```
+
+## Melhorias de UX implementadas
+
+- Link de criação de conta na tela de login.
+- Ícone de visibilidade em campos de senha.
+- Fluxo completo de esqueci/minha senha com páginas dedicadas.
+- Cards de filmes com ano, duração e gênero para decisão rápida.
+- Ajustes visuais de background para transição mais suave em diferentes larguras de tela.
+
+## Observações técnicas
+
+- O frontend consome endpoints autenticados com Bearer token.
+- As validações de dados de entrada são feitas antes das requisições.
+- Filtros complementares de data e duração são aplicados no cliente para melhorar experiência de busca.
