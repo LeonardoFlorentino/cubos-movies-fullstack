@@ -9,10 +9,10 @@ import { AuthHeader } from "../../components/auth/AuthHeader";
 import { MoviePoster } from "../../components/ui/MoviePoster";
 import filterPropertiesGraphic from "../../assets/filter-properties.svg";
 import filterPropertiesGraphicLight from "../../assets/filter-properties-light.svg";
-import type { CreateMoviePayload } from "../../types/movies";
+import type { CreateMoviePayload, Movie } from "../../types/movies";
 import { toast } from "sonner";
 import { getErrorMessage } from "../../lib/api-error";
-import { uploadMovieImage } from "../../lib/api";
+import { getMovies as fetchMoviesPage, uploadMovieImage } from "../../lib/api";
 import { compressImageIfNeeded } from "../../lib/image-compression";
 
 // ─── genre options ──────────────────────────────────────────────────────────
@@ -35,14 +35,17 @@ const GENRE_OPTIONS = [
 
 // ─── filter types ────────────────────────────────────────────────────────────
 type DurationFilter = "all" | "short" | "medium" | "long";
-type PeriodFilter = "all" | "last-30" | "last-365" | "year-to-date" | "custom";
 
 interface MovieFilters {
   duration: DurationFilter;
-  period: PeriodFilter;
   genre: string;
-  customStartDate: string;
-  customEndDate: string;
+  releaseStartDate: string;
+  releaseEndDate: string;
+}
+
+interface ClientFilterSnapshot {
+  key: string;
+  data: Movie[];
 }
 
 type AddMovieField =
@@ -56,10 +59,9 @@ type AddMovieFieldErrors = Partial<Record<AddMovieField, string>>;
 
 const defaultFilters: MovieFilters = {
   duration: "all",
-  period: "all",
   genre: "all",
-  customStartDate: "",
-  customEndDate: "",
+  releaseStartDate: "",
+  releaseEndDate: "",
 };
 
 const defaultForm: CreateMoviePayload = {
@@ -148,6 +150,8 @@ export function MoviesListPage() {
     isLoading,
     error,
     page,
+    limit,
+    total,
     totalPages,
     search,
     getMoviesAction,
@@ -183,6 +187,10 @@ export function MoviesListPage() {
   const [budgetInput, setBudgetInput] = useState("");
   const [genresInput, setGenresInput] = useState<string[]>([]);
   const [durationInput, setDurationInput] = useState("");
+  const [filterStartDateInput, setFilterStartDateInput] = useState("");
+  const [filterEndDateInput, setFilterEndDateInput] = useState("");
+  const [clientFilteredSource, setClientFilteredSource] =
+    useState<ClientFilterSnapshot | null>(null);
 
   // delete confirmation
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -239,18 +247,65 @@ export function MoviesListPage() {
   // ── filters ───────────────────────────────────────────────────────────────
   const activeCount =
     (appliedFilters.duration !== "all" ? 1 : 0) +
-    (appliedFilters.period !== "all" ? 1 : 0) +
+    (appliedFilters.releaseStartDate || appliedFilters.releaseEndDate ? 1 : 0) +
     (appliedFilters.genre !== "all" ? 1 : 0);
+  const hasClientSideFilters =
+    appliedFilters.duration !== "all" ||
+    Boolean(appliedFilters.releaseStartDate || appliedFilters.releaseEndDate);
+  const clientFilterKey = JSON.stringify({
+    search,
+    selectedGenre,
+    total,
+    limit,
+  });
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (!token || !hasClientSideFilters) {
+      return;
+    }
+
+    void fetchMoviesPage(1, Math.max(total, limit, 10), search, selectedGenre)
+      .then((response) => {
+        if (!isCancelled) {
+          setClientFilteredSource({
+            key: clientFilterKey,
+            data: response.data,
+          });
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setClientFilteredSource({
+            key: clientFilterKey,
+            data: [],
+          });
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    token,
+    hasClientSideFilters,
+    total,
+    limit,
+    search,
+    selectedGenre,
+    clientFilterKey,
+  ]);
 
   const filteredMovies = useMemo(() => {
-    const today = new Date();
-    const cutoff30 = new Date(today);
-    cutoff30.setDate(today.getDate() - 30);
-    const cutoff365 = new Date(today);
-    cutoff365.setDate(today.getDate() - 365);
-    const yearStart = new Date(today.getFullYear(), 0, 1);
+    const hasFreshClientSource = clientFilteredSource?.key === clientFilterKey;
+    const sourceMovies = hasClientSideFilters
+      ? hasFreshClientSource
+        ? clientFilteredSource.data
+        : []
+      : movies;
 
-    return movies.filter((movie) => {
+    return sourceMovies.filter((movie) => {
       const movieGenres = (movie.genres ?? []).map(normalizeGenre);
       const runtime =
         typeof movie.durationMinutes === "number"
@@ -272,44 +327,95 @@ export function MoviesListPage() {
       if (appliedFilters.duration === "long" && runtime <= 130) return false;
 
       if (!Number.isNaN(releaseDate.getTime())) {
-        if (appliedFilters.period === "last-30" && releaseDate < cutoff30)
-          return false;
-        if (appliedFilters.period === "last-365" && releaseDate < cutoff365)
-          return false;
-        if (appliedFilters.period === "year-to-date" && releaseDate < yearStart)
-          return false;
-        if (appliedFilters.period === "custom") {
-          const s = appliedFilters.customStartDate
-            ? new Date(`${appliedFilters.customStartDate}T00:00:00`)
-            : null;
-          const en = appliedFilters.customEndDate
-            ? new Date(`${appliedFilters.customEndDate}T23:59:59`)
-            : null;
-          if (s && releaseDate < s) return false;
-          if (en && releaseDate > en) return false;
-        }
+        const startDate = appliedFilters.releaseStartDate
+          ? new Date(`${appliedFilters.releaseStartDate}T00:00:00`)
+          : null;
+        const endDate = appliedFilters.releaseEndDate
+          ? new Date(`${appliedFilters.releaseEndDate}T23:59:59`)
+          : null;
+        if (startDate && releaseDate < startDate) return false;
+        if (endDate && releaseDate > endDate) return false;
       }
       return true;
     });
-  }, [movies, appliedFilters]);
+  }, [
+    movies,
+    clientFilteredSource,
+    clientFilterKey,
+    appliedFilters,
+    hasClientSideFilters,
+  ]);
+
+  const effectiveTotalPages = hasClientSideFilters
+    ? Math.ceil(filteredMovies.length / limit)
+    : totalPages;
+  const paginatedMovies = hasClientSideFilters
+    ? filteredMovies.slice((page - 1) * limit, page * limit)
+    : filteredMovies;
+  const isPageLoading =
+    hasClientSideFilters && clientFilteredSource?.key !== clientFilterKey;
+
+  useEffect(() => {
+    if (effectiveTotalPages > 0 && page > effectiveTotalPages) {
+      setPage(effectiveTotalPages);
+    }
+  }, [page, effectiveTotalPages, setPage]);
 
   const openFilters = () => {
     setDraftFilters(appliedFilters);
+    setFilterStartDateInput(formatIsoToBrDate(appliedFilters.releaseStartDate));
+    setFilterEndDateInput(formatIsoToBrDate(appliedFilters.releaseEndDate));
     setFiltersOpen(true);
   };
+
   const applyFilters = () => {
-    setAppliedFilters(draftFilters);
+    const parsedStartDate = parseBrDateToIso(filterStartDateInput);
+    const parsedEndDate = parseBrDateToIso(filterEndDateInput);
+    const hasTypedStartDate = filterStartDateInput.trim().length > 0;
+    const hasTypedEndDate = filterEndDateInput.trim().length > 0;
+
+    if (
+      (hasTypedStartDate && !parsedStartDate.isValid) ||
+      (hasTypedEndDate && !parsedEndDate.isValid)
+    ) {
+      toast.error("Informe datas válidas no formato brasileiro.");
+      return;
+    }
+
+    if (hasTypedStartDate !== hasTypedEndDate) {
+      toast.error(
+        "Informe data inicial e data final para filtrar por período.",
+      );
+      return;
+    }
+
+    if (
+      parsedStartDate.iso &&
+      parsedEndDate.iso &&
+      parsedStartDate.iso > parsedEndDate.iso
+    ) {
+      toast.error("A data inicial não pode ser maior que a data final.");
+      return;
+    }
+
+    setAppliedFilters({
+      ...draftFilters,
+      releaseStartDate: parsedStartDate.iso,
+      releaseEndDate: parsedEndDate.iso,
+    });
     setPage(1);
     setFiltersOpen(false);
   };
+
   const clearFilters = () => {
     setDraftFilters(defaultFilters);
+    setFilterStartDateInput("");
+    setFilterEndDateInput("");
     setAppliedFilters(defaultFilters);
     setPage(1);
     setFiltersOpen(false);
   };
 
-  // ── add movie ─────────────────────────────────────────────────────────────
   const openAdd = () => {
     setForm(defaultForm);
     setReleaseDateInput("");
@@ -569,17 +675,17 @@ export function MoviesListPage() {
         </form>
 
         {/* ── loading ───────────────────────────────────────────────────── */}
-        {isLoading && (
+        {(isLoading || isPageLoading) && (
           <div className="flex items-center justify-center py-20">
             <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-violet-500" />
           </div>
         )}
 
         {/* ── grid ──────────────────────────────────────────────────────── */}
-        {!isLoading && filteredMovies.length > 0 && (
+        {!isLoading && !isPageLoading && paginatedMovies.length > 0 && (
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {filteredMovies.map((movie) => {
+              {paginatedMovies.map((movie) => {
                 const year = new Date(movie.releaseDate).getFullYear();
                 const primaryGenre = movie.genres?.[0] ?? "Sem gênero";
                 const runtime =
@@ -601,7 +707,7 @@ export function MoviesListPage() {
                     }}
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-[rgba(96,97,120,0.32)] bg-[rgba(36,36,43,0.92)] transition hover:-translate-y-0.5 hover:border-violet-400/50 hover:shadow-[0_8px_32px_rgba(142,78,198,0.18)]"
                   >
-                    <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#16161e]">
+                    <div className="relative aspect-2/3 w-full overflow-hidden bg-[#16161e]">
                       <MoviePoster
                         src={movie.imageUrl}
                         title={movie.title}
@@ -625,7 +731,7 @@ export function MoviesListPage() {
               })}
             </div>
 
-            {totalPages > 1 && (
+            {effectiveTotalPages > 1 && (
               <div className="mt-10 flex items-center justify-center gap-2">
                 <button
                   type="button"
@@ -637,27 +743,30 @@ export function MoviesListPage() {
                   ‹
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setPage(n)}
-                      className={`h-9 w-9 rounded-md text-sm font-semibold transition ${
-                        n === page
-                          ? "bg-[#8e4ec6] text-white shadow-[0_0_12px_rgba(142,78,198,0.45)]"
-                          : "border border-slate-700 bg-slate-800/60 text-slate-300 hover:border-violet-500 hover:text-violet-300"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ),
-                )}
+                {Array.from(
+                  { length: effectiveTotalPages },
+                  (_, i) => i + 1,
+                ).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    className={`h-9 w-9 rounded-md text-sm font-semibold transition ${
+                      n === page
+                        ? "bg-[#8e4ec6] text-white shadow-[0_0_12px_rgba(142,78,198,0.45)]"
+                        : "border border-slate-700 bg-slate-800/60 text-slate-300 hover:border-violet-500 hover:text-violet-300"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
 
                 <button
                   type="button"
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
+                  onClick={() =>
+                    setPage(Math.min(effectiveTotalPages, page + 1))
+                  }
+                  disabled={page === effectiveTotalPages}
                   className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/60 text-sm text-slate-300 transition hover:border-violet-500 hover:text-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Próxima página"
                 >
@@ -669,7 +778,7 @@ export function MoviesListPage() {
         )}
 
         {/* ── empty state ───────────────────────────────────────────────── */}
-        {!isLoading && filteredMovies.length === 0 && (
+        {!isLoading && !isPageLoading && filteredMovies.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <svg
               className="mb-4 h-16 w-16 text-slate-700"
@@ -1118,49 +1227,44 @@ export function MoviesListPage() {
                   <label className="mb-2 block text-sm font-semibold text-slate-200">
                     Período de lançamento
                   </label>
-                  <select
-                    value={draftFilters.period}
-                    onChange={(e) =>
-                      setDraftFilters((p) => ({
-                        ...p,
-                        period: e.target.value as PeriodFilter,
-                      }))
-                    }
-                    className="h-11 w-full rounded-md border border-slate-600 bg-slate-950/75 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
-                  >
-                    <option value="all">Todos os períodos</option>
-                    <option value="last-30">Últimos 30 dias</option>
-                    <option value="last-365">Últimos 12 meses</option>
-                    <option value="year-to-date">Desde o início do ano</option>
-                    <option value="custom">Personalizado</option>
-                  </select>
-
-                  {draftFilters.period === "custom" && (
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                        Data inicial
+                      </label>
                       <input
-                        type="date"
-                        value={draftFilters.customStartDate}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={filterStartDateInput}
                         onChange={(e) =>
-                          setDraftFilters((p) => ({
-                            ...p,
-                            customStartDate: e.target.value,
-                          }))
+                          setFilterStartDateInput(
+                            parseBrDateToIso(e.target.value).masked,
+                          )
                         }
-                        className="h-11 rounded-md border border-slate-600 bg-slate-950/75 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
-                      />
-                      <input
-                        type="date"
-                        value={draftFilters.customEndDate}
-                        onChange={(e) =>
-                          setDraftFilters((p) => ({
-                            ...p,
-                            customEndDate: e.target.value,
-                          }))
-                        }
-                        className="h-11 rounded-md border border-slate-600 bg-slate-950/75 px-3 text-sm text-slate-100 focus:border-violet-500 focus:outline-none"
+                        placeholder="Data inicial"
+                        className="h-11 w-full rounded-md border border-[rgba(159,118,255,0.28)] bg-[rgba(40,24,68,0.55)] px-3 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-500 focus:bg-[rgba(52,31,88,0.72)] focus:outline-none"
                       />
                     </div>
-                  )}
+                    <div>
+                      <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                        Data final
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={filterEndDateInput}
+                        onChange={(e) =>
+                          setFilterEndDateInput(
+                            parseBrDateToIso(e.target.value).masked,
+                          )
+                        }
+                        placeholder="Data final"
+                        className="h-11 w-full rounded-md border border-[rgba(159,118,255,0.28)] bg-[rgba(40,24,68,0.55)] px-3 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-500 focus:bg-[rgba(52,31,88,0.72)] focus:outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -1184,7 +1288,7 @@ export function MoviesListPage() {
                 </div>
               </div>
 
-              <aside className="rounded-xl border border-violet-500/20 bg-gradient-to-br from-slate-900 to-slate-950 p-4">
+              <aside className="rounded-xl border border-violet-500/20 bg-linear-to-br from-slate-900 to-slate-950 p-4">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
                   Propriedades do filtro
                 </p>
@@ -1198,8 +1302,8 @@ export function MoviesListPage() {
                   className="h-auto w-full rounded-md border border-slate-700/80"
                 />
                 <p className="mt-3 text-xs leading-relaxed text-slate-400">
-                  Os filtros combinam duração, período e gênero para refinar a
-                  grade em tempo real.
+                  Os filtros combinam duração, intervalo de lançamento e gênero
+                  para refinar a grade em tempo real.
                 </p>
               </aside>
             </div>
